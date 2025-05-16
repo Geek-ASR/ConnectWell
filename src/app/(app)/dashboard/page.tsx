@@ -9,6 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContext";
+import { cn } from "@/lib/utils";
 import {
   ArrowBigUp,
   Briefcase,
@@ -57,7 +58,8 @@ interface FeedItem {
   imageHint?: string;
   upvotes: number;
   comments: number;
-  shares: number; // Or a similar metric like "Reposts"
+  shares: number;
+  isUpvotedByUser?: boolean; // Added for upvote functionality
 }
 
 interface AdItem {
@@ -87,6 +89,7 @@ const initialFeedItems: FeedItem[] = [
     upvotes: 1200,
     comments: 78,
     shares: 45,
+    isUpvotedByUser: false,
   },
   {
     id: "2",
@@ -102,6 +105,7 @@ const initialFeedItems: FeedItem[] = [
     upvotes: 850,
     comments: 123,
     shares: 22,
+    isUpvotedByUser: true, // Example of an already upvoted post
   },
   {
     id: "3",
@@ -120,6 +124,7 @@ const initialFeedItems: FeedItem[] = [
     upvotes: 930,
     comments: 55,
     shares: 30,
+    isUpvotedByUser: false,
   },
 ];
 
@@ -127,7 +132,7 @@ const initialFeedItems: FeedItem[] = [
 export default function DashboardPage() {
   const { user } = useAuth();
   const [postText, setPostText] = useState("");
-  const [activePostType, setActivePostType] = useState("share"); // 'share' or 'ask'
+  const [activePostType, setActivePostType] = useState("share");
   const [displayedFeedItems, setDisplayedFeedItems] = useState<FeedItem[]>(initialFeedItems);
 
   const spaces: SpaceItem[] = [
@@ -175,13 +180,27 @@ export default function DashboardPage() {
       content: postText,
       user: user?.displayName,
     });
-    // In a real app, you'd send this to a backend or state management
-    setPostText(""); // Clear textarea after submission
-    // Potentially add to feedItems state if managing locally, or refetch
+    setPostText("");
   };
 
   const handleHidePost = (postId: string) => {
     setDisplayedFeedItems(prevItems => prevItems.filter(item => item.id !== postId));
+  };
+
+  const handleUpvote = (postId: string) => {
+    setDisplayedFeedItems(prevItems =>
+      prevItems.map(item => {
+        if (item.id === postId) {
+          const newUpvotedState = !item.isUpvotedByUser;
+          return {
+            ...item,
+            isUpvotedByUser: newUpvotedState,
+            upvotes: newUpvotedState ? item.upvotes + 1 : item.upvotes - 1,
+          };
+        }
+        return item;
+      })
+    );
   };
 
 
@@ -310,17 +329,26 @@ export default function DashboardPage() {
             </CardContent>
             <CardFooter className="flex items-center justify-between text-sm text-muted-foreground pt-4 border-t">
               <div className="flex items-center gap-4">
-                <Button variant="ghost" size="sm" className="flex items-center gap-1.5 hover:bg-accent/50 hover:text-primary">
-                  <ArrowBigUp className="h-5 w-5" /> {item.upvotes > 1000 ? (item.upvotes/1000).toFixed(1) + 'k' : item.upvotes}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={cn(
+                    "flex items-center gap-1.5 hover:bg-accent/50",
+                    item.isUpvotedByUser ? "text-primary hover:text-primary/90" : "text-muted-foreground hover:text-primary"
+                  )}
+                  onClick={() => handleUpvote(item.id)}
+                >
+                  <ArrowBigUp className={cn("h-5 w-5", item.isUpvotedByUser ? "fill-primary" : "")} /> {/* Optional: fill-primary requires icon to support fill */}
+                  {item.upvotes > 1000 ? (item.upvotes/1000).toFixed(1) + 'k' : item.upvotes}
                 </Button>
-                <Button variant="ghost" size="sm" className="flex items-center gap-1.5 hover:bg-accent/50 hover:text-primary">
+                <Button variant="ghost" size="sm" className="flex items-center gap-1.5 text-muted-foreground hover:bg-accent/50 hover:text-primary">
                   <MessageCircle className="h-5 w-5" /> {item.comments}
                 </Button>
-                <Button variant="ghost" size="sm" className="flex items-center gap-1.5 hover:bg-accent/50 hover:text-primary">
+                <Button variant="ghost" size="sm" className="flex items-center gap-1.5 text-muted-foreground hover:bg-accent/50 hover:text-primary">
                   <Repeat className="h-5 w-5" /> {item.shares}
                 </Button>
               </div>
-              <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-accent/50 hover:text-primary">
+              <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:bg-accent/50 hover:text-primary">
                 <MoreHorizontal className="h-5 w-5" />
               </Button>
             </CardFooter>
@@ -352,3 +380,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    
