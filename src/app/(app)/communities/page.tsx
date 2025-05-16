@@ -21,7 +21,8 @@ export interface Community {
   bannerImageHint?: string; // Optional
 }
 
-const initialCommunities: Community[] = [
+// Changed to let to allow modification
+let initialCommunities: Community[] = [
   { id: "1", name: "Diabetes Support Group", description: "Sharing experiences and tips for managing diabetes.", longDescription: "This group is dedicated to individuals living with all types of diabetes, their families, and caregivers. We share experiences, offer support, discuss treatment options, and provide tips for daily management and healthy living. Join us to connect with a compassionate community.", members: 120, image: "https://placehold.co/400x250.png", imageHint: "health group", bannerImage: "https://placehold.co/1200x400.png", bannerImageHint: "community gathering" },
   { id: "2", name: "Ankylosing Spondylitis Warriors", description: "A community for those fighting AS.", longDescription: "Connect with fellow Ankylosing Spondylitis (AS) warriors. This space is for sharing coping mechanisms, treatment advancements, exercise routines, and emotional support for managing life with AS. Let's navigate this journey together.", members: 75, image: "https://placehold.co/400x250.png", imageHint: "wellness community", bannerImage: "https://placehold.co/1200x400.png", bannerImageHint: "support network" },
   { id: "3", name: "Mental Wellness Advocates", description: "Support for mental health challenges and triumphs.", longDescription: "A safe and inclusive community for discussing mental wellness, sharing personal stories of challenges and triumphs, and advocating for mental health awareness. Find resources, support, and understanding here.", members: 250, image: "https://placehold.co/400x250.png", imageHint: "support circle", bannerImage: "https://placehold.co/1200x400.png", bannerImageHint: "peaceful mind" },
@@ -37,7 +38,24 @@ export const getCommunityById = (id: string): Community | undefined => {
 };
 
 export const getAllCommunities = (): Community[] => {
-  return initialCommunities;
+  return [...initialCommunities]; // Return a copy to avoid direct state mutation issues elsewhere if needed
+};
+
+// New function to add a community (client-side simulation)
+export const addCommunity = (communityData: { name: string; description: string; longDescription?: string }): Community => {
+  const newCommunity: Community = {
+    id: Date.now().toString(),
+    name: communityData.name,
+    description: communityData.description,
+    longDescription: communityData.longDescription || communityData.description,
+    members: 0, // New communities start with 0 members
+    image: `https://placehold.co/400x250.png?text=${communityData.name.substring(0,2).toUpperCase()}`,
+    imageHint: "community topic", // Generic hint
+    bannerImage: `https://placehold.co/1200x400.png?text=${communityData.name.substring(0,2).toUpperCase()}`,
+    bannerImageHint: "community banner", // Generic hint
+  };
+  initialCommunities.unshift(newCommunity); // Add to the beginning of the array
+  return newCommunity;
 };
 
 
@@ -47,8 +65,10 @@ export default function CommunitiesPage() {
   const [filteredCommunities, setFilteredCommunities] = useState<Community[]>([]);
 
   useEffect(() => {
+    // Fetch all communities when the component mounts or when initialCommunities might have changed
     setCommunities(getAllCommunities());
-  }, []);
+  }, []); // Re-run if you expect initialCommunities to change due to external factors and need to refresh.
+            // For this specific case of adding then navigating back, the page re-mount will call this.
   
   useEffect(() => {
     const lowercasedSearchTerm = searchTerm.toLowerCase();
@@ -98,14 +118,16 @@ export default function CommunitiesPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredCommunities.map((community) => (
             <Card key={community.id} className="flex flex-col overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300">
-              <Image
-                src={community.image}
-                alt={community.name}
-                width={400}
-                height={250}
-                className="w-full h-48 object-cover"
-                data-ai-hint={community.imageHint}
-              />
+              <div className="relative w-full h-48">
+                <Image
+                  src={community.image}
+                  alt={community.name}
+                  fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  className="object-cover"
+                  data-ai-hint={community.imageHint}
+                />
+              </div>
               <CardHeader>
                 <CardTitle className="text-xl">{community.name}</CardTitle>
                 <div className="flex items-center text-sm text-muted-foreground mt-1">
@@ -138,4 +160,3 @@ export default function CommunitiesPage() {
     </div>
   );
 }
-

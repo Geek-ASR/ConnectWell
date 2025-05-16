@@ -18,6 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import { ArrowLeft, PlusCircle, Loader2 } from "lucide-react";
+import { addCommunity } from '../page'; // Import the new function
 
 export default function CreateCommunityPage() {
   const router = useRouter();
@@ -40,19 +41,34 @@ export default function CreateCommunityPage() {
       return;
     }
 
-    // Simulate API call
-    console.log("Creating community:", { communityName, communityDescription });
-    await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network delay
+    // Add the community to our client-side list
+    try {
+      addCommunity({ 
+        name: communityName, 
+        description: communityDescription, 
+        longDescription: communityDescription // Using description as longDescription for now
+      });
+      
+      // Simulate API call delay
+      console.log("Creating community (simulated):", { communityName, communityDescription });
+      await new Promise(resolve => setTimeout(resolve, 1000)); 
 
-    toast({
-      title: "Community Created (Simulated)",
-      description: `The community "${communityName}" has been successfully created.`,
-    });
+      toast({
+        title: "Community Created!",
+        description: `The community "${communityName}" has been successfully created.`,
+      });
+      router.push("/communities");
 
-    // In a real app, you would likely add the new community to a global state or re-fetch
-    // For now, we just navigate back
-    router.push("/communities");
-    // setIsSubmitting(false); // Not strictly necessary if navigating away immediately
+    } catch (error) {
+      console.error("Error creating community:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Could not create community. Please try again.",
+      });
+      setIsSubmitting(false);
+    }
+    // setIsSubmitting(false); // No longer needed here as we navigate away on success or clear on error
   };
 
   return (
