@@ -9,36 +9,56 @@ import Image from "next/image";
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
 
-interface Community {
+export interface Community {
   id: string;
   name: string;
   description: string;
+  longDescription?: string; // Optional: for the detail page
   members: number;
   image: string;
   imageHint: string;
+  bannerImage?: string; // Optional: for the detail page
+  bannerImageHint?: string; // Optional
 }
 
 const initialCommunities: Community[] = [
-  { id: "1", name: "Diabetes Support Group", description: "Sharing experiences and tips for managing diabetes.", members: 120, image: "https://placehold.co/400x250.png", imageHint: "health group" },
-  { id: "2", name: "Ankylosing Spondylitis Warriors", description: "A community for those fighting AS.", members: 75, image: "https://placehold.co/400x250.png", imageHint: "wellness community" },
-  { id: "3", name: "Mental Wellness Advocates", description: "Support for mental health challenges and triumphs.", members: 250, image: "https://placehold.co/400x250.png", imageHint: "support circle" },
-  { id: "4", name: "Chronic Pain Navigators", description: "Coping strategies and support for chronic pain.", members: 90, image: "https://placehold.co/400x250.png", imageHint: "patient group" },
-  { id: "5", name: "Allergy & Asthma Network", description: "Connect with others managing allergies and asthma.", members: 150, image: "https://placehold.co/400x250.png", imageHint: "breathing health" },
-  { id: "6", name: "Heart Health Champions", description: "A group focused on cardiovascular wellness and recovery.", members: 180, image: "https://placehold.co/400x250.png", imageHint: "heartbeat monitor" },
+  { id: "1", name: "Diabetes Support Group", description: "Sharing experiences and tips for managing diabetes.", longDescription: "This group is dedicated to individuals living with all types of diabetes, their families, and caregivers. We share experiences, offer support, discuss treatment options, and provide tips for daily management and healthy living. Join us to connect with a compassionate community.", members: 120, image: "https://placehold.co/400x250.png", imageHint: "health group", bannerImage: "https://placehold.co/1200x400.png", bannerImageHint: "community gathering" },
+  { id: "2", name: "Ankylosing Spondylitis Warriors", description: "A community for those fighting AS.", longDescription: "Connect with fellow Ankylosing Spondylitis (AS) warriors. This space is for sharing coping mechanisms, treatment advancements, exercise routines, and emotional support for managing life with AS. Let's navigate this journey together.", members: 75, image: "https://placehold.co/400x250.png", imageHint: "wellness community", bannerImage: "https://placehold.co/1200x400.png", bannerImageHint: "support network" },
+  { id: "3", name: "Mental Wellness Advocates", description: "Support for mental health challenges and triumphs.", longDescription: "A safe and inclusive community for discussing mental wellness, sharing personal stories of challenges and triumphs, and advocating for mental health awareness. Find resources, support, and understanding here.", members: 250, image: "https://placehold.co/400x250.png", imageHint: "support circle", bannerImage: "https://placehold.co/1200x400.png", bannerImageHint: "peaceful mind" },
+  { id: "4", name: "Chronic Pain Navigators", description: "Coping strategies and support for chronic pain.", longDescription: "Living with chronic pain can be isolating. This community offers a platform to share effective coping strategies, discuss pain management techniques, and find mutual support from others who understand the daily struggles.", members: 90, image: "https://placehold.co/400x250.png", imageHint: "patient group", bannerImage: "https://placehold.co/1200x400.png", bannerImageHint: "gentle healing" },
+  { id: "5", name: "Allergy & Asthma Network", description: "Connect with others managing allergies and asthma.", longDescription: "A network for individuals and families affected by allergies and asthma. Share tips on managing triggers, understanding medications, and navigating daily life with these conditions. Breathe easier with community support.", members: 150, image: "https://placehold.co/400x250.png", imageHint: "breathing health", bannerImage: "https://placehold.co/1200x400.png", bannerImageHint: "fresh air" },
+  { id: "6", name: "Heart Health Champions", description: "A group focused on cardiovascular wellness and recovery.", longDescription: "Dedicated to promoting heart health, supporting individuals recovering from cardiac events, and sharing information on cardiovascular wellness. Join fellow champions in making heart-healthy choices and supporting one another.", members: 180, image: "https://placehold.co/400x250.png", imageHint: "heartbeat monitor", bannerImage: "https://placehold.co/1200x400.png", bannerImageHint: "healthy lifestyle" },
 ];
+
+
+// Function to provide community data. In a real app, this would fetch from a DB or API.
+export const getCommunityById = (id: string): Community | undefined => {
+  return initialCommunities.find(community => community.id === id);
+};
+
+export const getAllCommunities = (): Community[] => {
+  return initialCommunities;
+};
+
 
 export default function CommunitiesPage() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [filteredCommunities, setFilteredCommunities] = useState<Community[]>(initialCommunities);
+  const [communities, setCommunities] = useState<Community[]>([]);
+  const [filteredCommunities, setFilteredCommunities] = useState<Community[]>([]);
 
   useEffect(() => {
+    setCommunities(getAllCommunities());
+  }, []);
+  
+  useEffect(() => {
     const lowercasedSearchTerm = searchTerm.toLowerCase();
-    const results = initialCommunities.filter(community =>
+    const results = communities.filter(community =>
       community.name.toLowerCase().includes(lowercasedSearchTerm) ||
       community.description.toLowerCase().includes(lowercasedSearchTerm)
     );
     setFilteredCommunities(results);
-  }, [searchTerm]);
+  }, [searchTerm, communities]);
+
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
@@ -54,7 +74,7 @@ export default function CommunitiesPage() {
               <CardDescription>Find groups based on medical conditions, share experiences, and connect.</CardDescription>
             </div>
             <Button asChild>
-              <Link href="/communities/create"> {/* Placeholder for create community page */}
+              <Link href="/communities/create">
                 <PlusCircle className="mr-2 h-4 w-4" /> Create Community
               </Link>
             </Button>
@@ -118,3 +138,4 @@ export default function CommunitiesPage() {
     </div>
   );
 }
+
