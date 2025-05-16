@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useFormState, useFormStatus } from "react-dom";
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
@@ -17,7 +18,18 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext'; 
 import { cn } from '@/lib/utils';
 import type { Community, PostInCommunity } from '@/lib/community-service'; 
-import { getCommunityById, addPostToCommunity, updateCommunityDetails } from '@/lib/community-service';
+import { getCommunityById, addPostToCommunity } from '@/lib/community-service';
+import { updateCommunityAction, type UpdateCommunityFormState } from '@/actions/community-actions';
+
+function EditCommunitySubmitButton() {
+  const { pending } = useFormStatus();
+  return (
+    <Button type="submit" disabled={pending}>
+      {pending ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...</> : "Save Changes"}
+    </Button>
+  );
+}
+
 
 export default function CommunityDetailPage() {
   const params = useParams();
@@ -33,25 +45,58 @@ export default function CommunityDetailPage() {
   const [isSubmittingNewPost, setIsSubmittingNewPost] = useState(false);
 
   const [isEditCommunityDialogOpen, setIsEditCommunityDialogOpen] = useState(false);
-  const [editCommunityName, setEditCommunityName] = useState("");
-  const [editCommunityDescription, setEditCommunityDescription] = useState("");
-  const [editCommunityLongDescription, setEditCommunityLongDescription] = useState("");
-  const [isSubmittingEditCommunity, setIsSubmittingEditCommunity] = useState(false);
+  // State for controlled inputs in edit dialog
+  const [currentEditName, setCurrentEditName] = useState("");
+  const [currentEditDescription, setCurrentEditDescription] = useState("");
+  const [currentEditLongDescription, setCurrentEditLongDescription] = useState("");
 
   const communityId = typeof params.id === 'string' ? params.id : undefined;
+
+  const initialEditFormState: UpdateCommunityFormState = { success: false };
+  // Ensure communityId is defined before binding
+  const boundUpdateCommunityAction = communityId ? updateCommunityAction.bind(null, communityId) : null;
+  const [editFormState, editFormAction] = useFormState(
+    boundUpdateCommunityAction || (() => Promise.resolve(initialEditFormState)), // Provide a no-op if bound action is null
+    initialEditFormState
+  );
+
 
   useEffect(() => {
     if (communityId) {
       const foundCommunity = getCommunityById(communityId);
       if (foundCommunity) {
         setCommunity(foundCommunity);
+        setCurrentEditName(foundCommunity.name);
+        setCurrentEditDescription(foundCommunity.description);
+        setCurrentEditLongDescription(foundCommunity.longDescription || foundCommunity.description);
       } else {
         console.error("Community not found with ID:", communityId);
-        // Optionally, redirect or show a more prominent "not found" message earlier
       }
     }
     setLoading(false);
-  }, [communityId]); // Removed router from dependencies as it's not directly used for fetching
+  }, [communityId]);
+
+  useEffect(() => {
+    if (editFormState?.success && editFormState.community) {
+      toast({
+        title: "Community Updated!",
+        description: editFormState.message || `The community "${editFormState.community.name}" has been updated.`,
+      });
+      setCommunity(editFormState.community); // Update local community state
+      // Optionally re-sync currentEdit states if dialog remains open or for next open
+      setCurrentEditName(editFormState.community.name);
+      setCurrentEditDescription(editFormState.community.description);
+      setCurrentEditLongDescription(editFormState.community.longDescription || editFormState.community.description);
+      setIsEditCommunityDialogOpen(false); // Close dialog on success
+    } else if (editFormState?.message && !editFormState.success) {
+      toast({
+        variant: "destructive",
+        title: "Error Updating Community",
+        description: editFormState.message,
+      });
+    }
+  }, [editFormState, toast]);
+
 
   const getInitials = (name: string | null | undefined) => {
     if (!name) return "U";
@@ -62,7 +107,7 @@ export default function CommunityDetailPage() {
     return name.substring(0, 2).toUpperCase();
   };
   
-  const communityMembers = [ // Placeholder members, can be part of community data later
+  const communityMembers = [ 
     { id: 'm1', name: 'Eva Green', avatar: 'https://placehold.co/40x40.png?text=EG', avatarHint: 'profile photo' },
     { id: 'm2', name: 'David Lee', avatar: 'https://placehold.co/40x40.png?text=DL', avatarHint: 'user icon' },
     { id: 'm3', name: 'Olivia Chen', avatar: 'https://placehold.co/40x40.png?text=OC', avatarHint: 'member avatar' },
@@ -71,43 +116,11 @@ export default function CommunityDetailPage() {
 
   const handleOpenEditCommunityDialog = () => {
     if (!community) return;
-    setEditCommunityName(community.name);
-    setEditCommunityDescription(community.description);
-    setEditCommunityLongDescription(community.longDescription || community.description);
+    // Pre-fill form with current community details
+    setCurrentEditName(community.name);
+    setCurrentEditDescription(community.description);
+    setCurrentEditLongDescription(community.longDescription || community.description);
     setIsEditCommunityDialogOpen(true);
-  };
-
-  const handleEditCommunitySubmit = async () => {
-    if (!community || !communityId) {
-      toast({ title: "Error", description: "Community data missing.", variant: "destructive" });
-      return;
-    }
-    if (!editCommunityName.trim() || !editCommunityDescription.trim()) {
-      toast({ title: "Missing Information", description: "Please provide a name and description.", variant: "destructive" });
-      return;
-    }
-
-    setIsSubmittingEditCommunity(true);
-    try {
-      const updatedCommunityData = updateCommunityDetails(communityId, {
-        name: editCommunityName,
-        description: editCommunityDescription,
-        longDescription: editCommunityLongDescription,
-      });
-
-      if (updatedCommunityData) {
-        setCommunity(updatedCommunityData); 
-        toast({ title: "Community Updated", description: "Community details have been saved." });
-        setIsEditCommunityDialogOpen(false);
-      } else {
-        toast({ title: "Error", description: "Could not update community details.", variant: "destructive" });
-      }
-    } catch (error) {
-      console.error("Error updating community:", error);
-      toast({ title: "Error", description: "An unexpected error occurred.", variant: "destructive" });
-    } finally {
-      setIsSubmittingEditCommunity(false);
-    }
   };
 
 
@@ -143,13 +156,13 @@ export default function CommunityDetailPage() {
       });
 
       if (postAdded) {
-        const updatedCommunityData = getCommunityById(communityId); // Re-fetch to get updated posts
+        const updatedCommunityData = getCommunityById(communityId); 
         if (updatedCommunityData) {
           setCommunity(updatedCommunityData);
         }
         toast({ title: "Post Created", description: "Your post has been added to the community." });
         setIsNewPostDialogOpen(false);
-        setNewPostTitle(""); // Reset form fields
+        setNewPostTitle(""); 
         setNewPostContent("");
       } else {
         toast({ title: "Error", description: "Could not add post to the community.", variant: "destructive" });
@@ -241,7 +254,6 @@ export default function CommunityDetailPage() {
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
-      {/* Header and Back Button */}
       <div className="flex items-center justify-between pt-2">
         <Button variant="outline" size="icon" asChild>
           <Link href="/communities">
@@ -249,43 +261,71 @@ export default function CommunityDetailPage() {
             <span className="sr-only">Back to Communities</span>
           </Link>
         </Button>
-        {/* Community Actions */}
         <div className="flex items-center gap-2">
             <Dialog open={isEditCommunityDialogOpen} onOpenChange={setIsEditCommunityDialogOpen}>
               <DialogTrigger asChild>
-                <Button variant="outline" onClick={handleOpenEditCommunityDialog}>
+                <Button variant="outline" onClick={handleOpenEditCommunityDialog} disabled={!boundUpdateCommunityAction}>
                     <Edit3 className="mr-2 h-4 w-4" /> Edit Community
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[525px]">
-                <DialogHeader>
-                  <DialogTitle>Edit Community Details</DialogTitle>
-                  <DialogDescription>
-                    Update the name and description for the {community.name} community.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="grid gap-4 py-4">
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="editCommunityName" className="text-right">Name</Label>
-                    <Input id="editCommunityName" value={editCommunityName} onChange={(e) => setEditCommunityName(e.target.value)} className="col-span-3" disabled={isSubmittingEditCommunity} />
+                <form action={boundUpdateCommunityAction ? editFormAction : undefined}>
+                  <DialogHeader>
+                    <DialogTitle>Edit Community Details</DialogTitle>
+                    <DialogDescription>
+                      Update the name and description for the {community.name} community.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="editCommunityName" className="text-right">Name</Label>
+                      <Input 
+                        id="editCommunityName" 
+                        name="editCommunityName" 
+                        value={currentEditName} 
+                        onChange={(e) => setCurrentEditName(e.target.value)} 
+                        className="col-span-3" 
+                      />
+                       {editFormState?.fieldErrors?.editCommunityName && (
+                          <p className="col-span-4 text-sm text-destructive text-right">{editFormState.fieldErrors.editCommunityName}</p>
+                        )}
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="editCommunityDescription" className="text-right">Description</Label>
+                      <Textarea 
+                        id="editCommunityDescription" 
+                        name="editCommunityDescription" 
+                        value={currentEditDescription} 
+                        onChange={(e) => setCurrentEditDescription(e.target.value)} 
+                        className="col-span-3" 
+                        rows={3} 
+                      />
+                      {editFormState?.fieldErrors?.editCommunityDescription && (
+                        <p className="col-span-4 text-sm text-destructive text-right">{editFormState.fieldErrors.editCommunityDescription}</p>
+                      )}
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="editCommunityLongDescription" className="text-right">Full Details</Label>
+                      <Textarea 
+                        id="editCommunityLongDescription" 
+                        name="editCommunityLongDescription" 
+                        value={currentEditLongDescription} 
+                        onChange={(e) => setCurrentEditLongDescription(e.target.value)} 
+                        className="col-span-3" 
+                        rows={5} 
+                      />
+                       {editFormState?.fieldErrors?.editCommunityLongDescription && (
+                          <p className="col-span-4 text-sm text-destructive text-right">{editFormState.fieldErrors.editCommunityLongDescription}</p>
+                        )}
+                    </div>
                   </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="editCommunityDescription" className="text-right">Description</Label>
-                    <Textarea id="editCommunityDescription" value={editCommunityDescription} onChange={(e) => setEditCommunityDescription(e.target.value)} className="col-span-3" rows={3} disabled={isSubmittingEditCommunity} />
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="editCommunityLongDescription" className="text-right">Full Details</Label>
-                    <Textarea id="editCommunityLongDescription" value={editCommunityLongDescription} onChange={(e) => setEditCommunityLongDescription(e.target.value)} className="col-span-3" rows={5} disabled={isSubmittingEditCommunity} />
-                  </div>
-                </div>
-                <DialogFooter>
-                  <DialogClose asChild>
-                    <Button type="button" variant="outline" disabled={isSubmittingEditCommunity}>Cancel</Button>
-                  </DialogClose>
-                  <Button type="button" onClick={handleEditCommunitySubmit} disabled={isSubmittingEditCommunity || !editCommunityName.trim() || !editCommunityDescription.trim()}>
-                    {isSubmittingEditCommunity ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...</> : "Save Changes"}
-                  </Button>
-                </DialogFooter>
+                  <DialogFooter>
+                    <DialogClose asChild>
+                      <Button type="button" variant="outline">Cancel</Button>
+                    </DialogClose>
+                    <EditCommunitySubmitButton />
+                  </DialogFooter>
+                </form>
               </DialogContent>
             </Dialog>
 
@@ -356,7 +396,6 @@ export default function CommunityDetailPage() {
         </div>
       </div>
 
-      {/* Community Banner and Info */}
       <Card className="shadow-xl overflow-hidden">
         <div className="relative h-48 md:h-64 bg-muted">
           {community.bannerImage && (
@@ -369,7 +408,7 @@ export default function CommunityDetailPage() {
               priority
             />
           )}
-          <div className="absolute inset-0 bg-black/30" /> {/* Overlay for text contrast */}
+          <div className="absolute inset-0 bg-black/30" /> 
         </div>
         <CardHeader className="relative -mt-16 md:-mt-20 z-10 p-6 bg-gradient-to-t from-card via-card/80 to-transparent rounded-t-lg">
           <div className='flex flex-col items-center md:flex-row md:items-end gap-4'>
@@ -393,9 +432,7 @@ export default function CommunityDetailPage() {
         </CardContent>
       </Card>
       
-      {/* Main content: Posts and Members side-by-side */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Posts Section (Left/Main) */}
         <div className="lg:col-span-2 space-y-4">
             <h2 className="text-2xl font-semibold text-foreground mb-4">Recent Posts</h2>
             {(community.posts && community.posts.length > 0) ? (
@@ -453,14 +490,13 @@ export default function CommunityDetailPage() {
             )}
         </div>
 
-        {/* Members & About Section (Right Sidebar) */}
         <div className="lg:col-span-1 space-y-6">
             <Card className="shadow-md">
                 <CardHeader>
                     <CardTitle className="text-xl font-semibold text-foreground">Community Members</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                    {communityMembers.slice(0, 5).map(member => ( // Show a few members
+                    {communityMembers.slice(0, 5).map(member => ( 
                         <div key={member.id} className="flex items-center gap-3 hover:bg-accent/50 p-2 rounded-md transition-colors">
                             <Avatar className="h-9 w-9">
                                 <AvatarImage src={member.avatar} alt={member.name} data-ai-hint={member.avatarHint} />
@@ -503,3 +539,4 @@ export default function CommunityDetailPage() {
     </div>
   );
 }
+
