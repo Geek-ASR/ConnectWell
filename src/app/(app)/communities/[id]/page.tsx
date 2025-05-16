@@ -12,13 +12,14 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft, Users, Edit3, MessageSquarePlus, Settings, ArrowBigUp, MessageCircle as MessageCircleIcon, Loader2, CalendarDays, FileText } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
+import { ArrowLeft, Users, Edit3, MessageSquarePlus, Settings, ArrowBigUp, MessageCircle as MessageCircleIcon, Loader2, CalendarDays, FileText, Send } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext'; 
 import { cn } from '@/lib/utils';
-import type { Community, PostInCommunity } from '@/lib/community-service'; 
-import { getCommunityById, addPostToCommunity, updateCommunityDetails } from '@/lib/community-service';
+import type { Community, PostInCommunity, Comment } from '@/lib/community-service'; 
+import { getCommunityById, addCommentToPost } from '@/lib/community-service';
 import { 
   updateCommunityAction, 
   createPostInCommunityAction, 
@@ -54,19 +55,20 @@ export default function CommunityDetailPage() {
   const [loading, setLoading] = useState(true);
 
   const [isNewPostDialogOpen, setIsNewPostDialogOpen] = useState(false);
-  // Local state for controlled inputs in New Post dialog
   const [newPostTitle, setNewPostTitle] = useState("");
   const [newPostContent, setNewPostContent] = useState("");
 
   const [isEditCommunityDialogOpen, setIsEditCommunityDialogOpen] = useState(false);
-  // State for controlled inputs in edit dialog
   const [currentEditName, setCurrentEditName] = useState("");
   const [currentEditDescription, setCurrentEditDescription] = useState("");
   const [currentEditLongDescription, setCurrentEditLongDescription] = useState("");
 
+  const [activeCommentPostId, setActiveCommentPostId] = useState<string | null>(null);
+  const [newCommentText, setNewCommentText] = useState("");
+
+
   const communityId = typeof params.id === 'string' ? params.id : undefined;
 
-  // Edit Community Form Action
   const initialEditFormState: UpdateCommunityFormState = { success: false };
   const boundUpdateCommunityAction = communityId ? updateCommunityAction.bind(null, communityId) : null;
   const [editFormState, editFormAction] = useFormState(
@@ -74,7 +76,6 @@ export default function CommunityDetailPage() {
     initialEditFormState
   );
 
-  // Create Post Form Action
   const initialCreatePostFormState: CreatePostInCommunityFormState = { success: false };
   const [createPostFormState, formActionCreatePost] = useFormState(createPostInCommunityAction, initialCreatePostFormState);
 
@@ -93,7 +94,6 @@ export default function CommunityDetailPage() {
     setLoading(false);
   }, [communityId]);
 
-  // Effect for Edit Community Action result
   useEffect(() => {
     if (editFormState?.success && editFormState.community) {
       toast({
@@ -114,7 +114,6 @@ export default function CommunityDetailPage() {
     }
   }, [editFormState, toast]);
 
-  // Effect for Create Post Action result
   useEffect(() => {
     if (createPostFormState?.success && createPostFormState.post && communityId) {
       toast({
@@ -147,7 +146,6 @@ export default function CommunityDetailPage() {
     return name.substring(0, 2).toUpperCase();
   };
   
-
   const handleOpenEditCommunityDialog = () => {
     if (!community) return;
     setCurrentEditName(community.name);
@@ -190,13 +188,6 @@ export default function CommunityDetailPage() {
     });
     setCommunity({ ...community, posts: updatedPosts });
   };
-
-  const handleCommentOnPost = (postId: string) => {
-    toast({
-      title: "Comment",
-      description: `Commenting on post ${postId} is not yet implemented.`,
-    });
-  };
   
   const handleViewPost = (postId: string) => {
     toast({
@@ -205,13 +196,53 @@ export default function CommunityDetailPage() {
     });
   };
 
+  const handleToggleCommentInput = (postId: string) => {
+    if (activeCommentPostId === postId) {
+      setActiveCommentPostId(null); // Close if already open
+    } else {
+      setActiveCommentPostId(postId);
+      setNewCommentText(""); // Clear previous comment text
+    }
+  };
+
+  const handlePostNewComment = (postId: string) => {
+    if (!community || !communityId || !user) {
+      toast({ title: "Error", description: "Cannot post comment. User or community data missing.", variant: "destructive"});
+      return;
+    }
+    if (newCommentText.trim() === "") {
+      toast({ title: "Empty Comment", description: "Please write something to comment.", variant: "destructive"});
+      return;
+    }
+
+    const commentAdded = addCommentToPost(communityId, postId, {
+      userId: user.uid,
+      userName: user.displayName || "Anonymous User",
+      userAvatar: user.photoURL || `https://placehold.co/40x40.png?text=${getInitials(user.displayName)}`,
+      userAvatarHint: "user avatar",
+      text: newCommentText,
+    });
+
+    if (commentAdded) {
+      const updatedCommunityData = getCommunityById(communityId);
+      if (updatedCommunityData) {
+        setCommunity(updatedCommunityData);
+      }
+      setNewCommentText("");
+      // Optionally close the input: setActiveCommentPostId(null);
+      toast({title: "Comment Posted!"});
+    } else {
+      toast({title: "Error", description: "Failed to post comment.", variant: "destructive"});
+    }
+  };
+
 
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
         <Card className="shadow-lg">
-            <CardContent className="pt-6">
-                <Loader2 className="mr-2 h-8 w-8 animate-spin text-primary" />
+            <CardContent className="pt-6 flex items-center gap-2">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
                 <p className="text-xl text-muted-foreground">Loading community details...</p>
             </CardContent>
         </Card>
@@ -431,7 +462,11 @@ export default function CommunityDetailPage() {
         <div className="lg:col-span-2 space-y-4">
             <h2 className="text-2xl font-semibold text-foreground mb-4">Recent Posts</h2>
             {(community.posts && community.posts.length > 0) ? (
-                community.posts.slice().sort((a, b) => new Date(b.id.split('_')[1]).getTime() - new Date(a.id.split('_')[1]).getTime()).map(post => ( // Sort by timestamp in ID
+                community.posts.slice().sort((a, b) => {
+                    const timeA = a.id.split('_')[1] ? parseInt(a.id.split('_')[1]) : 0;
+                    const timeB = b.id.split('_')[1] ? parseInt(b.id.split('_')[1]) : 0;
+                    return timeB - timeA;
+                }).map(post => (
                     <Card key={post.id} className="shadow-md hover:shadow-lg transition-shadow">
                         <CardHeader className="flex flex-row items-start gap-3 pb-3">
                             <Avatar className="h-10 w-10">
@@ -446,6 +481,51 @@ export default function CommunityDetailPage() {
                         <CardContent>
                             <h3 className="text-lg font-semibold mb-1 text-foreground">{post.title}</h3>
                             <p className="text-sm text-foreground/90 whitespace-pre-line">{post.content}</p>
+                             {/* Comments Section */}
+                            {(post.commentObjects && post.commentObjects.length > 0 || activeCommentPostId === post.id) && (
+                              <div className="mt-4 pt-4 border-t">
+                                <h4 className="text-sm font-semibold mb-2 text-foreground">Comments ({post.comments})</h4>
+                                {post.commentObjects.slice().sort((a,b) => { // Sort comments by time in ID
+                                     const timeA = a.id.split('_')[1] ? parseInt(a.id.split('_')[1]) : 0;
+                                     const timeB = b.id.split('_')[1] ? parseInt(b.id.split('_')[1]) : 0;
+                                     return timeB - timeA;
+                                }).map(comment => (
+                                  <div key={comment.id} className="flex items-start gap-2.5 mb-3 last:mb-0">
+                                    <Avatar className="h-8 w-8">
+                                      <AvatarImage src={comment.userAvatar} alt={comment.userName} data-ai-hint={comment.userAvatarHint} />
+                                      <AvatarFallback>{getInitials(comment.userName)}</AvatarFallback>
+                                    </Avatar>
+                                    <div className="flex-grow p-3 rounded-md bg-muted/50">
+                                      <div className="flex items-center justify-between">
+                                        <p className="text-xs font-semibold text-foreground">{comment.userName}</p>
+                                        <p className="text-xs text-muted-foreground">{comment.time}</p>
+                                      </div>
+                                      <p className="text-xs text-foreground/80 mt-0.5">{comment.text}</p>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                            {activeCommentPostId === post.id && (
+                              <div className="mt-3 flex items-center gap-2">
+                                <Avatar className="h-8 w-8">
+                                    <AvatarImage src={user?.photoURL || undefined} alt={user?.displayName || "User"} data-ai-hint="user avatar" />
+                                    <AvatarFallback>{getInitials(user?.displayName)}</AvatarFallback>
+                                </Avatar>
+                                <Input
+                                  type="text"
+                                  placeholder="Write a comment..."
+                                  value={newCommentText}
+                                  onChange={(e) => setNewCommentText(e.target.value)}
+                                  className="flex-grow h-9 text-xs"
+                                  onKeyPress={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handlePostNewComment(post.id);}}}
+                                />
+                                <Button size="icon" className="h-9 w-9" onClick={() => handlePostNewComment(post.id)} disabled={!newCommentText.trim()}>
+                                  <Send className="h-4 w-4" />
+                                  <span className="sr-only">Post Comment</span>
+                                </Button>
+                              </div>
+                            )}
                         </CardContent>
                         <CardFooter className="text-xs text-muted-foreground flex justify-between items-center pt-3 border-t">
                            <div className="flex items-center gap-3">
@@ -465,7 +545,7 @@ export default function CommunityDetailPage() {
                                     variant="ghost" 
                                     size="sm" 
                                     className="flex items-center gap-1 text-xs h-auto p-1 text-muted-foreground hover:text-primary"
-                                    onClick={() => handleCommentOnPost(post.id)}
+                                    onClick={() => handleToggleCommentInput(post.id)}
                                 >
                                     <MessageCircleIcon className="h-4 w-4" /> {post.comments} Comment{post.comments !== 1 ? 's' : ''}
                                 </Button>
