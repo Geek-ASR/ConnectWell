@@ -38,10 +38,14 @@ import {
   TrendingUp,
   Users,
   X,
+  Loader2,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
+import { moderateContent, ModerateContentOutput } from "@/ai/flows/ai-moderation";
+import { useToast } from "@/hooks/use-toast";
+
 
 interface SpaceItem {
   name: string;
@@ -137,9 +141,11 @@ const initialFeedItems: FeedItem[] = [
 
 export default function DashboardPage() {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [postText, setPostText] = useState("");
   const [activePostType, setActivePostType] = useState("share");
   const [displayedFeedItems, setDisplayedFeedItems] = useState<FeedItem[]>(initialFeedItems);
+  const [isSubmittingPost, setIsSubmittingPost] = useState(false);
 
   const spaces: SpaceItem[] = [
     { name: "Medical Research Today", icon: Briefcase, href: "#" },
@@ -178,20 +184,51 @@ export default function DashboardPage() {
     return name.substring(0, 2).toUpperCase();
   };
 
-  const handlePostSubmit = (e: React.FormEvent) => {
+  const handlePostSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!postText.trim()) return;
-    console.log({
-      type: activePostType,
-      content: postText,
-      user: user?.displayName,
-    });
-    setPostText("");
+
+    setIsSubmittingPost(true);
+    try {
+      const moderationResult: ModerateContentOutput = await moderateContent({ text: postText });
+
+      if (moderationResult.isHarmful) {
+        toast({
+          variant: "destructive",
+          title: "Content Moderation",
+          description: moderationResult.reason || "This content violates community guidelines.",
+        });
+      } else {
+        // Simulate successful post
+        console.log({
+          type: activePostType,
+          content: postText,
+          user: user?.displayName,
+        });
+        toast({
+          title: "Post Created!",
+          description: activePostType === "share" ? "Your update has been shared." : "Your question has been posted.",
+        });
+        setPostText("");
+      }
+    } catch (error) {
+      console.error("Error during content moderation:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Could not submit post. Please try again.",
+      });
+    } finally {
+      setIsSubmittingPost(false);
+    }
   };
 
   const handleHidePost = (postId: string) => {
     setDisplayedFeedItems(prevItems => prevItems.filter(item => item.id !== postId));
     console.log(`Post ${postId} hidden.`);
+     toast({
+        description: "Post hidden from your feed.",
+      });
   };
 
   const handleUpvote = (postId: string) => {
@@ -213,11 +250,17 @@ export default function DashboardPage() {
   const handleCommentClick = (postId: string) => {
     console.log(`Comment button clicked for post: ${postId}`);
     // Future: Toggle comment section or navigate to post details with comments
+    toast({
+      description: `Viewing comments for post ${postId}. (Placeholder)`,
+    });
   };
 
   const handleShareClick = (postId: string) => {
     console.log(`Share button clicked for post: ${postId}`);
     // Future: Open share modal or copy link
+    toast({
+      description: `Sharing post ${postId}. (Placeholder)`,
+    });
   };
 
   return (
@@ -282,6 +325,7 @@ export default function DashboardPage() {
                     onChange={(e) => setPostText(e.target.value)}
                     rows={4}
                     className="w-full text-sm"
+                    disabled={isSubmittingPost}
                   />
                 </TabsContent>
                 <TabsContent value="ask" className="mt-4">
@@ -291,10 +335,20 @@ export default function DashboardPage() {
                     onChange={(e) => setPostText(e.target.value)}
                     rows={4}
                     className="w-full text-sm"
+                    disabled={isSubmittingPost}
                   />
                 </TabsContent>
                 <div className="flex justify-end items-center mt-4 gap-2">
-                  <Button type="submit" disabled={!postText.trim()}>Post</Button>
+                  <Button type="submit" disabled={!postText.trim() || isSubmittingPost}>
+                    {isSubmittingPost ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Posting...
+                      </>
+                    ) : (
+                      "Post"
+                    )}
+                  </Button>
                 </div>
               </form>
             </Tabs>
@@ -381,10 +435,16 @@ export default function DashboardPage() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => console.log(`Report post ${item.id}`)}>
+                  <DropdownMenuItem onClick={() => {
+                     console.log(`Report post ${item.id}`);
+                     toast({ description: `Post ${item.id} reported. (Placeholder)`});
+                    }}>
                     Report post
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => console.log(`Save post ${item.id}`)}>
+                  <DropdownMenuItem onClick={() => {
+                    console.log(`Save post ${item.id}`);
+                    toast({ description: `Post ${item.id} saved. (Placeholder)`});
+                  }}>
                     Save post
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => handleHidePost(item.id)}>
@@ -421,3 +481,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+
