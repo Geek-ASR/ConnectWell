@@ -34,7 +34,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 interface SpaceItem {
   name: string;
@@ -69,10 +69,66 @@ interface AdItem {
   advertiser: string;
 }
 
+const initialFeedItems: FeedItem[] = [
+  {
+    id: "1",
+    user: {
+      name: "Dr. Emily Carter",
+      avatarUrl: "https://placehold.co/40x40.png?text=EC",
+      avatarHint: "doctor portrait",
+      role: "Cardiologist, Lead Researcher",
+    },
+    updatedTime: "5h ago",
+    question: "What are the latest advancements in treating hypertension?",
+    content:
+      "Recent studies show promising results with new combination therapies and lifestyle intervention programs. One particular study highlighted the impact of personalized medicine... (more)",
+    imageUrl: "https://placehold.co/600x400.png",
+    imageHint: "medical research",
+    upvotes: 1200,
+    comments: 78,
+    shares: 45,
+  },
+  {
+    id: "2",
+    user: {
+      name: "John Smith",
+      avatarUrl: "https://placehold.co/40x40.png?text=JS",
+      avatarHint: "patient advocate",
+      role: "Patient Advocate, Diabetes Educator",
+    },
+    updatedTime: "1d ago",
+    content:
+      "Sharing my journey managing Type 2 Diabetes. It's been a rollercoaster, but finding a supportive community and the right diet plan has made a huge difference. Happy to answer questions or share tips! #diabetes #healthjourney",
+    upvotes: 850,
+    comments: 123,
+    shares: 22,
+  },
+  {
+    id: "3",
+    user: {
+      name: "Wellness Hub",
+      avatarUrl: "https://placehold.co/40x40.png?text=WH",
+      avatarHint: "wellness logo",
+      role: "Community Space",
+    },
+    updatedTime: "3d ago",
+    question: "Best practices for post-operative care at home?",
+    content:
+      "Recovering from surgery requires careful attention to medication, wound care, and mobility. We've compiled a list of essential tips from healthcare professionals to ensure a smooth recovery process. Read more on our blog...",
+    imageUrl: "https://placehold.co/600x400.png",
+    imageHint: "home recovery",
+    upvotes: 930,
+    comments: 55,
+    shares: 30,
+  },
+];
+
+
 export default function DashboardPage() {
   const { user } = useAuth();
   const [postText, setPostText] = useState("");
   const [activePostType, setActivePostType] = useState("share"); // 'share' or 'ask'
+  const [displayedFeedItems, setDisplayedFeedItems] = useState<FeedItem[]>(initialFeedItems);
 
   const spaces: SpaceItem[] = [
     { name: "Medical Research Today", icon: Briefcase, href: "#" },
@@ -81,60 +137,6 @@ export default function DashboardPage() {
     { name: "Mental Wellness Journeys", icon: Lightbulb, href: "#" },
     { name: "Fitness & Recovery", icon: TrendingUp, href: "#" },
     { name: "Pediatric Health", icon: Star, href: "#" },
-  ];
-
-  const feedItems: FeedItem[] = [
-    {
-      id: "1",
-      user: {
-        name: "Dr. Emily Carter",
-        avatarUrl: "https://placehold.co/40x40.png?text=EC",
-        avatarHint: "doctor portrait",
-        role: "Cardiologist, Lead Researcher",
-      },
-      updatedTime: "5h ago",
-      question: "What are the latest advancements in treating hypertension?",
-      content:
-        "Recent studies show promising results with new combination therapies and lifestyle intervention programs. One particular study highlighted the impact of personalized medicine... (more)",
-      imageUrl: "https://placehold.co/600x400.png",
-      imageHint: "medical research",
-      upvotes: 1200,
-      comments: 78,
-      shares: 45,
-    },
-    {
-      id: "2",
-      user: {
-        name: "John Smith",
-        avatarUrl: "https://placehold.co/40x40.png?text=JS",
-        avatarHint: "patient advocate",
-        role: "Patient Advocate, Diabetes Educator",
-      },
-      updatedTime: "1d ago",
-      content:
-        "Sharing my journey managing Type 2 Diabetes. It's been a rollercoaster, but finding a supportive community and the right diet plan has made a huge difference. Happy to answer questions or share tips! #diabetes #healthjourney",
-      upvotes: 850,
-      comments: 123,
-      shares: 22,
-    },
-    {
-      id: "3",
-      user: {
-        name: "Wellness Hub",
-        avatarUrl: "https://placehold.co/40x40.png?text=WH",
-        avatarHint: "wellness logo",
-        role: "Community Space",
-      },
-      updatedTime: "3d ago",
-      question: "Best practices for post-operative care at home?",
-      content:
-        "Recovering from surgery requires careful attention to medication, wound care, and mobility. We've compiled a list of essential tips from healthcare professionals to ensure a smooth recovery process. Read more on our blog...",
-      imageUrl: "https://placehold.co/600x400.png",
-      imageHint: "home recovery",
-      upvotes: 930,
-      comments: 55,
-      shares: 30,
-    },
   ];
 
   const ads: AdItem[] = [
@@ -176,6 +178,10 @@ export default function DashboardPage() {
     // In a real app, you'd send this to a backend or state management
     setPostText(""); // Clear textarea after submission
     // Potentially add to feedItems state if managing locally, or refetch
+  };
+
+  const handleHidePost = (postId: string) => {
+    setDisplayedFeedItems(prevItems => prevItems.filter(item => item.id !== postId));
   };
 
 
@@ -253,15 +259,6 @@ export default function DashboardPage() {
                   />
                 </TabsContent>
                 <div className="flex justify-end items-center mt-4 gap-2">
-                  {/* Placeholder for future icons like add image/link */}
-                  {/* 
-                  <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary">
-                    <ImageIcon className="h-5 w-5" />
-                  </Button>
-                  <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary">
-                    <LinkIcon className="h-5 w-5" />
-                  </Button>
-                   */}
                   <Button type="submit" disabled={!postText.trim()}>Post</Button>
                 </div>
               </form>
@@ -269,7 +266,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        {feedItems.map((item) => (
+        {displayedFeedItems.map((item) => (
           <Card key={item.id} className="shadow-md">
             <CardHeader>
               <div className="flex items-start justify-between">
@@ -288,7 +285,7 @@ export default function DashboardPage() {
                     </p>
                   </div>
                 </div>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => handleHidePost(item.id)}>
                   <X className="h-4 w-4" />
                 </Button>
               </div>
@@ -355,4 +352,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
