@@ -39,11 +39,13 @@ import {
   Users,
   X,
   Loader2,
+  Bookmark, // For Save icon
+  Flag, // For Report icon
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
-import { moderateContent, ModerateContentOutput } from "@/ai/flows/ai-moderation";
+import { moderateContent, type ModerateContentOutput } from "@/ai/flows/ai-moderation";
 import { useToast } from "@/hooks/use-toast";
 
 
@@ -70,6 +72,8 @@ interface FeedItem {
   comments: number;
   shares: number;
   isUpvotedByUser?: boolean;
+  isReported?: boolean;
+  isSaved?: boolean;
 }
 
 interface AdItem {
@@ -100,6 +104,8 @@ const initialFeedItems: FeedItem[] = [
     comments: 78,
     shares: 45,
     isUpvotedByUser: false,
+    isReported: false,
+    isSaved: false,
   },
   {
     id: "2",
@@ -116,6 +122,8 @@ const initialFeedItems: FeedItem[] = [
     comments: 123,
     shares: 22,
     isUpvotedByUser: true,
+    isReported: false,
+    isSaved: true,
   },
   {
     id: "3",
@@ -135,6 +143,8 @@ const initialFeedItems: FeedItem[] = [
     comments: 55,
     shares: 30,
     isUpvotedByUser: false,
+    isReported: false,
+    isSaved: false,
   },
 ];
 
@@ -214,6 +224,8 @@ export default function DashboardPage() {
           comments: 0,
           shares: 0,
           isUpvotedByUser: false,
+          isReported: false,
+          isSaved: false,
         };
 
         setDisplayedFeedItems(prevItems => [newPost, ...prevItems]);
@@ -237,7 +249,6 @@ export default function DashboardPage() {
 
   const handleHidePost = (postId: string) => {
     setDisplayedFeedItems(prevItems => prevItems.filter(item => item.id !== postId));
-    console.log(`Post ${postId} hidden.`);
      toast({
         description: "Post hidden from your feed.",
       });
@@ -260,20 +271,54 @@ export default function DashboardPage() {
   };
 
   const handleCommentClick = (postId: string) => {
-    console.log(`Comment button clicked for post: ${postId}`);
-    // Future: Toggle comment section or navigate to post details with comments
+    setDisplayedFeedItems(prevItems =>
+      prevItems.map(item =>
+        item.id === postId ? { ...item, comments: item.comments + 1 } : item
+      )
+    );
     toast({
-      description: `Viewing comments for post ${postId}. (Placeholder)`,
+      description: "Comment added (simulation). Viewing comments not yet implemented.",
     });
   };
 
   const handleShareClick = (postId: string) => {
-    console.log(`Share button clicked for post: ${postId}`);
-    // Future: Open share modal or copy link
+     setDisplayedFeedItems(prevItems =>
+      prevItems.map(item =>
+        item.id === postId ? { ...item, shares: item.shares + 1 } : item
+      )
+    );
     toast({
-      description: `Sharing post ${postId}. (Placeholder)`,
+      description: "Post link copied to clipboard (simulation).",
     });
   };
+
+  const handleReportPost = (postId: string) => {
+    setDisplayedFeedItems(prevItems =>
+      prevItems.map(item =>
+        item.id === postId ? { ...item, isReported: true } : item
+      )
+    );
+    toast({
+      title: "Post Reported",
+      description: "Thank you for your feedback. This post will be reviewed.",
+    });
+  };
+
+  const handleToggleSavePost = (postId: string) => {
+    setDisplayedFeedItems(prevItems =>
+      prevItems.map(item => {
+        if (item.id === postId) {
+          const newSavedState = !item.isSaved;
+          toast({
+            description: newSavedState ? "Post saved!" : "Post unsaved.",
+          });
+          return { ...item, isSaved: newSavedState };
+        }
+        return item;
+      })
+    );
+  };
+
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-x-6 xl:gap-x-8 min-h-screen">
@@ -368,7 +413,7 @@ export default function DashboardPage() {
         </Card>
 
         {displayedFeedItems.map((item) => (
-          <Card key={item.id} className="shadow-md">
+          <Card key={item.id} className={cn("shadow-md", item.isReported && "opacity-60")}>
             <CardHeader>
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
@@ -386,9 +431,11 @@ export default function DashboardPage() {
                     </p>
                   </div>
                 </div>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => handleHidePost(item.id)}>
-                  <X className="h-4 w-4" />
-                </Button>
+                {!item.isReported && (
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => handleHidePost(item.id)}>
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
               </div>
             </CardHeader>
             <CardContent>
@@ -419,6 +466,7 @@ export default function DashboardPage() {
                     item.isUpvotedByUser ? "text-primary hover:text-primary/90" : "text-muted-foreground hover:text-primary"
                   )}
                   onClick={() => handleUpvote(item.id)}
+                  disabled={item.isReported}
                 >
                   <ArrowBigUp className={cn("h-5 w-5", item.isUpvotedByUser ? "fill-primary" : "")} />
                   {item.upvotes > 1000 ? (item.upvotes/1000).toFixed(1) + 'k' : item.upvotes}
@@ -428,6 +476,7 @@ export default function DashboardPage() {
                   size="sm" 
                   className="flex items-center gap-1.5 text-muted-foreground hover:bg-accent/50 hover:text-primary"
                   onClick={() => handleCommentClick(item.id)}
+                  disabled={item.isReported}
                 >
                   <MessageCircle className="h-5 w-5" /> {item.comments}
                 </Button>
@@ -436,34 +485,32 @@ export default function DashboardPage() {
                   size="sm" 
                   className="flex items-center gap-1.5 text-muted-foreground hover:bg-accent/50 hover:text-primary"
                   onClick={() => handleShareClick(item.id)}
+                  disabled={item.isReported}
                 >
                   <Repeat className="h-5 w-5" /> {item.shares}
                 </Button>
               </div>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:bg-accent/50 hover:text-primary">
-                    <MoreHorizontal className="h-5 w-5" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => {
-                     console.log(`Report post ${item.id}`);
-                     toast({ description: `Post ${item.id} reported. (Placeholder)`});
-                    }}>
-                    Report post
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => {
-                    console.log(`Save post ${item.id}`);
-                    toast({ description: `Post ${item.id} saved. (Placeholder)`});
-                  }}>
-                    Save post
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleHidePost(item.id)}>
-                    Not interested in this post
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              {!item.isReported && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:bg-accent/50 hover:text-primary">
+                      <MoreHorizontal className="h-5 w-5" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => handleReportPost(item.id)}>
+                      <Flag className="mr-2 h-4 w-4" /> Report post
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleToggleSavePost(item.id)}>
+                       {item.isSaved ? <Bookmark className="mr-2 h-4 w-4 fill-current" /> : <Bookmark className="mr-2 h-4 w-4" />}
+                      {item.isSaved ? "Unsave post" : "Save post"}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleHidePost(item.id)}>
+                      Not interested in this post
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
             </CardFooter>
           </Card>
         ))}
@@ -493,3 +540,4 @@ export default function DashboardPage() {
     </div>
   );
 }
+
