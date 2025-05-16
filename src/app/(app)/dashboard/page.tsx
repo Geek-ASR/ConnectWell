@@ -11,6 +11,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   ArrowBigUp,
   Briefcase,
   ChevronDown,
@@ -59,7 +65,7 @@ interface FeedItem {
   upvotes: number;
   comments: number;
   shares: number;
-  isUpvotedByUser?: boolean; // Added for upvote functionality
+  isUpvotedByUser?: boolean;
 }
 
 interface AdItem {
@@ -105,7 +111,7 @@ const initialFeedItems: FeedItem[] = [
     upvotes: 850,
     comments: 123,
     shares: 22,
-    isUpvotedByUser: true, // Example of an already upvoted post
+    isUpvotedByUser: true,
   },
   {
     id: "3",
@@ -185,6 +191,7 @@ export default function DashboardPage() {
 
   const handleHidePost = (postId: string) => {
     setDisplayedFeedItems(prevItems => prevItems.filter(item => item.id !== postId));
+    console.log(`Post ${postId} hidden.`);
   };
 
   const handleUpvote = (postId: string) => {
@@ -203,6 +210,15 @@ export default function DashboardPage() {
     );
   };
 
+  const handleCommentClick = (postId: string) => {
+    console.log(`Comment button clicked for post: ${postId}`);
+    // Future: Toggle comment section or navigate to post details with comments
+  };
+
+  const handleShareClick = (postId: string) => {
+    console.log(`Share button clicked for post: ${postId}`);
+    // Future: Open share modal or copy link
+  };
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-x-6 xl:gap-x-8 min-h-screen">
@@ -338,19 +354,44 @@ export default function DashboardPage() {
                   )}
                   onClick={() => handleUpvote(item.id)}
                 >
-                  <ArrowBigUp className={cn("h-5 w-5", item.isUpvotedByUser ? "fill-primary" : "")} /> {/* Optional: fill-primary requires icon to support fill */}
+                  <ArrowBigUp className={cn("h-5 w-5", item.isUpvotedByUser ? "fill-primary" : "")} />
                   {item.upvotes > 1000 ? (item.upvotes/1000).toFixed(1) + 'k' : item.upvotes}
                 </Button>
-                <Button variant="ghost" size="sm" className="flex items-center gap-1.5 text-muted-foreground hover:bg-accent/50 hover:text-primary">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="flex items-center gap-1.5 text-muted-foreground hover:bg-accent/50 hover:text-primary"
+                  onClick={() => handleCommentClick(item.id)}
+                >
                   <MessageCircle className="h-5 w-5" /> {item.comments}
                 </Button>
-                <Button variant="ghost" size="sm" className="flex items-center gap-1.5 text-muted-foreground hover:bg-accent/50 hover:text-primary">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="flex items-center gap-1.5 text-muted-foreground hover:bg-accent/50 hover:text-primary"
+                  onClick={() => handleShareClick(item.id)}
+                >
                   <Repeat className="h-5 w-5" /> {item.shares}
                 </Button>
               </div>
-              <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:bg-accent/50 hover:text-primary">
-                <MoreHorizontal className="h-5 w-5" />
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:bg-accent/50 hover:text-primary">
+                    <MoreHorizontal className="h-5 w-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => console.log(`Report post ${item.id}`)}>
+                    Report post
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => console.log(`Save post ${item.id}`)}>
+                    Save post
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleHidePost(item.id)}>
+                    Not interested in this post
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </CardFooter>
           </Card>
         ))}
@@ -380,5 +421,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    
