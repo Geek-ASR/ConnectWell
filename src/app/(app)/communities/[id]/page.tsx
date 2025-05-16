@@ -7,21 +7,30 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Users, Edit3, MessageSquarePlus, Settings, ArrowBigUp, MessageCircle as MessageCircleIcon } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { ArrowLeft, Users, Edit3, MessageSquarePlus, Settings, ArrowBigUp, MessageCircle as MessageCircleIcon, Loader2 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import type { Community, PostInCommunity } from '../page'; // Import the Community and PostInCommunity types
-import { getCommunityById, addPostToCommunity } from '../page'; // Import data fetching and mutation functions
+import type { Community, PostInCommunity } from '../page'; 
+import { getCommunityById, addPostToCommunity } from '../page'; 
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/contexts/AuthContext'; // Import useAuth
+import { useAuth } from '@/contexts/AuthContext'; 
 import { cn } from '@/lib/utils';
 
 export default function CommunityDetailPage() {
   const params = useParams();
   const router = useRouter();
   const { toast } = useToast();
-  const { user } = useAuth(); // Get current user
+  const { user } = useAuth(); 
   const [community, setCommunity] = useState<Community | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const [isNewPostDialogOpen, setIsNewPostDialogOpen] = useState(false);
+  const [newPostTitle, setNewPostTitle] = useState("");
+  const [newPostContent, setNewPostContent] = useState("");
+  const [isSubmittingNewPost, setIsSubmittingNewPost] = useState(false);
 
   const communityId = typeof params.id === 'string' ? params.id : undefined;
 
@@ -32,8 +41,6 @@ export default function CommunityDetailPage() {
         setCommunity(foundCommunity);
       } else {
         console.error("Community not found");
-        // Optionally redirect or show a specific "not found" UI earlier
-        // router.push('/communities?error=notfound'); 
       }
     }
     setLoading(false);
@@ -59,31 +66,57 @@ export default function CommunityDetailPage() {
     toast({ title: "Edit Community", description: "This would open an edit form for the community. (Not implemented)" });
   };
 
-  const handleNewPost = () => {
+  const handleOpenNewPostDialog = () => {
     if (!community || !communityId || !user) {
       toast({ title: "Error", description: "Cannot create post. Community or user data missing.", variant: "destructive" });
       return;
     }
+    setNewPostTitle("");
+    setNewPostContent("");
+    setIsNewPostDialogOpen(true);
+  };
 
-    const postAdded = addPostToCommunity(communityId, {
-      userId: user.uid,
-      userName: user.displayName || 'Anonymous User',
-      userAvatar: user.photoURL || `https://placehold.co/40x40.png?text=${getInitials(user.displayName)}`,
-      userAvatarHint: 'user avatar',
-      title: `A new discussion by ${user.displayName || 'a member'}`,
-      content: 'This is a newly added post to this community! Share your thoughts and experiences.'
-    });
+  const handleCreatePostSubmit = async () => {
+    if (!community || !communityId || !user) {
+      toast({ title: "Error", description: "Cannot create post. Community or user data missing.", variant: "destructive" });
+      return;
+    }
+    if (!newPostTitle.trim() || !newPostContent.trim()) {
+      toast({ title: "Missing Information", description: "Please provide a title and content for your post.", variant: "destructive" });
+      return;
+    }
 
-    if (postAdded) {
-      const updatedCommunityData = getCommunityById(communityId);
-      if (updatedCommunityData) {
-        setCommunity(updatedCommunityData);
+    setIsSubmittingNewPost(true);
+    try {
+      const postAdded = addPostToCommunity(communityId, {
+        userId: user.uid,
+        userName: user.displayName || 'Anonymous User',
+        userAvatar: user.photoURL || `https://placehold.co/40x40.png?text=${getInitials(user.displayName)}`,
+        userAvatarHint: 'user avatar',
+        title: newPostTitle,
+        content: newPostContent
+      });
+
+      if (postAdded) {
+        const updatedCommunityData = getCommunityById(communityId);
+        if (updatedCommunityData) {
+          setCommunity(updatedCommunityData);
+        }
+        toast({ title: "Post Created", description: "Your post has been added to the community." });
+        setIsNewPostDialogOpen(false);
+        setNewPostTitle("");
+        setNewPostContent("");
+      } else {
+        toast({ title: "Error", description: "Could not add post to the community.", variant: "destructive" });
       }
-      toast({ title: "Post Created", description: "Your post has been added to the community." });
-    } else {
-      toast({ title: "Error", description: "Could not add post to the community.", variant: "destructive" });
+    } catch (error) {
+      console.error("Error creating post:", error);
+      toast({ title: "Error", description: "An unexpected error occurred while creating the post.", variant: "destructive" });
+    } finally {
+      setIsSubmittingNewPost(false);
     }
   };
+
 
   const handleViewAllMembers = () => {
     toast({ title: "View All Members", description: `Displaying all ${community?.members || 0} members. (Not implemented)` });
@@ -176,9 +209,70 @@ export default function CommunityDetailPage() {
             <Button variant="outline" onClick={handleEditCommunity}>
                 <Edit3 className="mr-2 h-4 w-4" /> Edit Community
             </Button>
-             <Button onClick={handleNewPost}>
-                <MessageSquarePlus className="mr-2 h-4 w-4" /> New Post
-            </Button>
+            <Dialog open={isNewPostDialogOpen} onOpenChange={setIsNewPostDialogOpen}>
+              <DialogTrigger asChild>
+                <Button onClick={handleOpenNewPostDialog}>
+                  <MessageSquarePlus className="mr-2 h-4 w-4" /> New Post
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[525px]">
+                <DialogHeader>
+                  <DialogTitle>Create a New Post</DialogTitle>
+                  <DialogDescription>
+                    Share your thoughts or start a discussion in the {community.name} community.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="newPostTitle" className="text-right">
+                      Title
+                    </Label>
+                    <Input
+                      id="newPostTitle"
+                      value={newPostTitle}
+                      onChange={(e) => setNewPostTitle(e.target.value)}
+                      className="col-span-3"
+                      placeholder="Enter post title"
+                      disabled={isSubmittingNewPost}
+                    />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="newPostContent" className="text-right">
+                      Content
+                    </Label>
+                    <Textarea
+                      id="newPostContent"
+                      value={newPostContent}
+                      onChange={(e) => setNewPostContent(e.target.value)}
+                      className="col-span-3"
+                      placeholder="What's on your mind?"
+                      rows={5}
+                      disabled={isSubmittingNewPost}
+                    />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <DialogClose asChild>
+                    <Button type="button" variant="outline" disabled={isSubmittingNewPost}>
+                      Cancel
+                    </Button>
+                  </DialogClose>
+                  <Button 
+                    type="button" 
+                    onClick={handleCreatePostSubmit} 
+                    disabled={isSubmittingNewPost || !newPostTitle.trim() || !newPostContent.trim()}
+                  >
+                    {isSubmittingNewPost ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Posting...
+                      </>
+                    ) : (
+                      "Create Post"
+                    )}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
         </div>
       </div>
 
@@ -329,3 +423,5 @@ export default function CommunityDetailPage() {
     </div>
   );
 }
+
+    
