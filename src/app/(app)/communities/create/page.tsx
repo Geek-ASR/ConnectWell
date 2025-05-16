@@ -18,7 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import { ArrowLeft, PlusCircle, Loader2 } from "lucide-react";
-import { addCommunity } from '../page'; // Import the new function
+import { addCommunity } from '@/lib/community-service'; // Import from the new service
 
 export default function CreateCommunityPage() {
   const router = useRouter();
@@ -41,16 +41,15 @@ export default function CreateCommunityPage() {
       return;
     }
 
-    // Add the community to our client-side list
     try {
+      // Add the community using the centralized service
       addCommunity({ 
         name: communityName, 
         description: communityDescription, 
-        longDescription: communityDescription // Using description as longDescription for now
+        longDescription: communityDescription 
       });
       
-      // Simulate API call delay
-      console.log("Creating community (simulated):", { communityName, communityDescription });
+      console.log("Creating community (simulated API call):", { communityName, communityDescription });
       await new Promise(resolve => setTimeout(resolve, 1000)); 
 
       toast({
@@ -68,7 +67,6 @@ export default function CreateCommunityPage() {
       });
       setIsSubmitting(false);
     }
-    // setIsSubmitting(false); // No longer needed here as we navigate away on success or clear on error
   };
 
   return (
@@ -117,15 +115,6 @@ export default function CreateCommunityPage() {
                 className="text-base"
               />
             </div>
-             {/* Placeholder for image upload in the future
-            <div className="space-y-2">
-              <Label htmlFor="communityImage">Community Image (Optional)</Label>
-              <Input id="communityImage" type="file" disabled={isSubmitting} />
-              <p className="text-xs text-muted-foreground">
-                Choose an image that represents your community.
-              </p>
-            </div>
-            */}
           </CardContent>
           <CardFooter className="flex justify-end gap-2 pt-6">
             <Button variant="outline" asChild disabled={isSubmitting}>

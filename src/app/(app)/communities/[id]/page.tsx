@@ -13,11 +13,11 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { ArrowLeft, Users, Edit3, MessageSquarePlus, Settings, ArrowBigUp, MessageCircle as MessageCircleIcon, Loader2 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import type { Community, PostInCommunity } from '../page'; 
-import { getCommunityById, addPostToCommunity, updateCommunityDetails } from '../page'; 
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext'; 
 import { cn } from '@/lib/utils';
+import type { Community, PostInCommunity } from '@/lib/community-service'; 
+import { getCommunityById, addPostToCommunity, updateCommunityDetails } from '@/lib/community-service';
 
 export default function CommunityDetailPage() {
   const params = useParams();
@@ -46,11 +46,12 @@ export default function CommunityDetailPage() {
       if (foundCommunity) {
         setCommunity(foundCommunity);
       } else {
-        console.error("Community not found");
+        console.error("Community not found with ID:", communityId);
+        // Optionally, redirect or show a more prominent "not found" message earlier
       }
     }
     setLoading(false);
-  }, [communityId, router]);
+  }, [communityId]); // Removed router from dependencies as it's not directly used for fetching
 
   const getInitials = (name: string | null | undefined) => {
     if (!name) return "U";
@@ -61,7 +62,7 @@ export default function CommunityDetailPage() {
     return name.substring(0, 2).toUpperCase();
   };
   
-  const communityMembers = [
+  const communityMembers = [ // Placeholder members, can be part of community data later
     { id: 'm1', name: 'Eva Green', avatar: 'https://placehold.co/40x40.png?text=EG', avatarHint: 'profile photo' },
     { id: 'm2', name: 'David Lee', avatar: 'https://placehold.co/40x40.png?text=DL', avatarHint: 'user icon' },
     { id: 'm3', name: 'Olivia Chen', avatar: 'https://placehold.co/40x40.png?text=OC', avatarHint: 'member avatar' },
@@ -95,7 +96,7 @@ export default function CommunityDetailPage() {
       });
 
       if (updatedCommunityData) {
-        setCommunity(updatedCommunityData); // Update local state to reflect changes
+        setCommunity(updatedCommunityData); 
         toast({ title: "Community Updated", description: "Community details have been saved." });
         setIsEditCommunityDialogOpen(false);
       } else {
@@ -142,13 +143,13 @@ export default function CommunityDetailPage() {
       });
 
       if (postAdded) {
-        const updatedCommunityData = getCommunityById(communityId);
+        const updatedCommunityData = getCommunityById(communityId); // Re-fetch to get updated posts
         if (updatedCommunityData) {
           setCommunity(updatedCommunityData);
         }
         toast({ title: "Post Created", description: "Your post has been added to the community." });
         setIsNewPostDialogOpen(false);
-        setNewPostTitle("");
+        setNewPostTitle(""); // Reset form fields
         setNewPostContent("");
       } else {
         toast({ title: "Error", description: "Could not add post to the community.", variant: "destructive" });
