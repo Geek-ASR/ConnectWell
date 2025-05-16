@@ -7,12 +7,13 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Users, Edit3, MessageSquarePlus, Settings } from 'lucide-react';
+import { ArrowLeft, Users, Edit3, MessageSquarePlus, Settings, ArrowBigUp, MessageCircle as MessageCircleIcon } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import type { Community, PostInCommunity } from '../page'; // Import the Community and PostInCommunity types
 import { getCommunityById, addPostToCommunity } from '../page'; // Import data fetching and mutation functions
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext'; // Import useAuth
+import { cn } from '@/lib/utils';
 
 export default function CommunityDetailPage() {
   const params = useParams();
@@ -31,6 +32,8 @@ export default function CommunityDetailPage() {
         setCommunity(foundCommunity);
       } else {
         console.error("Community not found");
+        // Optionally redirect or show a specific "not found" UI earlier
+        // router.push('/communities?error=notfound'); 
       }
     }
     setLoading(false);
@@ -45,7 +48,6 @@ export default function CommunityDetailPage() {
     return name.substring(0, 2).toUpperCase();
   };
   
-  // Placeholder data for members - posts will come from community.posts
   const communityMembers = [
     { id: 'm1', name: 'Eva Green', avatar: 'https://placehold.co/40x40.png?text=EG', avatarHint: 'profile photo' },
     { id: 'm2', name: 'David Lee', avatar: 'https://placehold.co/40x40.png?text=DL', avatarHint: 'user icon' },
@@ -90,6 +92,38 @@ export default function CommunityDetailPage() {
   const handleCommunitySettings = () => {
     toast({ title: "Community Settings", description: "Opening community settings. (Not implemented)" });
   };
+
+  const handleUpvotePost = (postId: string) => {
+    if (!community) return;
+
+    const updatedPosts = community.posts.map(post => {
+      if (post.id === postId) {
+        const newUpvotedState = !post.isUpvotedByUser;
+        return {
+          ...post,
+          isUpvotedByUser: newUpvotedState,
+          upvotes: newUpvotedState ? post.upvotes + 1 : post.upvotes - 1,
+        };
+      }
+      return post;
+    });
+    setCommunity({ ...community, posts: updatedPosts });
+  };
+
+  const handleCommentOnPost = (postId: string) => {
+    toast({
+      title: "Comment",
+      description: `Viewing comments for post ${postId}. (Not implemented)`,
+    });
+  };
+  
+  const handleViewPost = (postId: string) => {
+    toast({
+        title: "View Post",
+        description: `Navigating to full view for post ${postId}. (Not implemented)`,
+    });
+  };
+
 
   if (loading) {
     return (
@@ -208,11 +242,31 @@ export default function CommunityDetailPage() {
                             <p className="text-sm text-foreground/90">{post.content}</p>
                         </CardContent>
                         <CardFooter className="text-xs text-muted-foreground flex justify-between items-center pt-3 border-t">
-                            <div className="flex gap-4">
-                                <span>{post.upvotes} Upvotes</span>
-                                <span>{post.comments} Comments</span>
+                           <div className="flex items-center gap-3">
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className={cn(
+                                        "flex items-center gap-1 text-xs h-auto p-1",
+                                        post.isUpvotedByUser ? "text-primary hover:text-primary/90" : "text-muted-foreground hover:text-primary"
+                                    )}
+                                    onClick={() => handleUpvotePost(post.id)}
+                                >
+                                    <ArrowBigUp className={cn("h-4 w-4", post.isUpvotedByUser ? "fill-primary" : "")} />
+                                    {post.upvotes} Upvote{post.upvotes !== 1 ? 's' : ''}
+                                </Button>
+                                <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    className="flex items-center gap-1 text-xs h-auto p-1 text-muted-foreground hover:text-primary"
+                                    onClick={() => handleCommentOnPost(post.id)}
+                                >
+                                    <MessageCircleIcon className="h-4 w-4" /> {post.comments} Comment{post.comments !== 1 ? 's' : ''}
+                                </Button>
                             </div>
-                            <Button variant="ghost" size="sm" className="text-xs h-auto p-1">View Post</Button>
+                            <Button variant="ghost" size="sm" className="text-xs h-auto p-1" onClick={() => handleViewPost(post.id)}>
+                                View Post
+                            </Button>
                         </CardFooter>
                     </Card>
                 ))

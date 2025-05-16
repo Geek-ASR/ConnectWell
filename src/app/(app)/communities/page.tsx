@@ -20,6 +20,7 @@ export interface PostInCommunity {
   comments: number;
   upvotes: number;
   time: string;
+  isUpvotedByUser?: boolean; // Added for upvote functionality
 }
 
 export interface Community {
@@ -85,6 +86,7 @@ export const addPostToCommunity = (
       comments: 0,
       upvotes: 0,
       time: 'Just now',
+      isUpvotedByUser: false, // Initialize upvote state
     };
     community.posts.unshift(newPost); // Add to the beginning
     return newPost;
