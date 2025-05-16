@@ -41,6 +41,12 @@ let initialCommunities: Community[] = [
   { id: "6", name: "Heart Health Champions", description: "A group focused on cardiovascular wellness and recovery.", longDescription: "Dedicated to promoting heart health, supporting individuals recovering from cardiac events, and sharing information on cardiovascular wellness. Join fellow champions in making heart-healthy choices and supporting one another.", members: 0, image: "https://placehold.co/400x250.png", imageHint: "heartbeat monitor", bannerImage: "https://placehold.co/1200x400.png", bannerImageHint: "healthy lifestyle", posts: [], foundedDate: "May 2024", rules: defaultRules },
 ];
 
+const generateHintFromName = (name: string, suffix: string = ""): string => {
+  const nameParts = name.toLowerCase().split(' ').slice(0, 2).join(' ');
+  return nameParts ? `${nameParts}${suffix ? ' ' + suffix : ''}` : `community${suffix ? ' ' + suffix : ''}`;
+};
+
+
 export const getCommunityById = (id: string): Community | undefined => {
   return initialCommunities.find(community => community.id === id);
 };
@@ -57,9 +63,9 @@ export const addCommunity = (communityData: { name: string; description: string;
     longDescription: communityData.longDescription,
     members: 0, // New communities start with 0 members
     image: `https://placehold.co/400x250.png?text=${encodeURIComponent(communityData.name.substring(0,3))}`,
-    imageHint: "community topic",
+    imageHint: generateHintFromName(communityData.name),
     bannerImage: `https://placehold.co/1200x400.png?text=${encodeURIComponent(communityData.name.substring(0,3))}`,
-    bannerImageHint: "community banner",
+    bannerImageHint: generateHintFromName(communityData.name, "banner"),
     posts: [],
     foundedDate: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
     rules: defaultRules,
@@ -98,15 +104,12 @@ export const updateCommunityDetails = (
     imageHint?: string;
     bannerImage?: string;
     bannerImageHint?: string;
-    // We don't typically allow changing foundedDate or rules this way,
-    // but keeping structure flexible if admin features were added later.
     foundedDate?: string;
     rules?: string;
   }
 ): Community | null => {
   const communityIndex = initialCommunities.findIndex(c => c.id === communityId);
   if (communityIndex > -1) {
-    // Create a shallow copy to modify
     const community = { ...initialCommunities[communityIndex] };
 
     let nameChanged = false;
@@ -117,24 +120,20 @@ export const updateCommunityDetails = (
     if (updatedData.description) {
       community.description = updatedData.description;
     }
-    // Ensure longDescription defaults to description if not provided during update
     community.longDescription = updatedData.longDescription || updatedData.description || community.longDescription;
 
-    // Handle explicit image updates
     if (updatedData.image) {
       community.image = updatedData.image;
-      // If an image is provided and it's a data URI, assume it's AI generated unless a specific hint is given
       if (updatedData.image.startsWith('data:image') && !updatedData.imageHint) {
         community.imageHint = "AI generated icon";
       } else if (updatedData.imageHint) {
         community.imageHint = updatedData.imageHint;
       }
-    } else if (nameChanged) { // Only update placeholder if name changed AND no explicit image given
+    } else if (nameChanged) {
       community.image = `https://placehold.co/400x250.png?text=${encodeURIComponent(community.name.substring(0,3))}`;
-      community.imageHint = "community topic";
+      community.imageHint = generateHintFromName(community.name);
     }
 
-    // Handle explicit banner image updates
     if (updatedData.bannerImage) {
       community.bannerImage = updatedData.bannerImage;
       if (updatedData.bannerImage.startsWith('data:image') && !updatedData.bannerImageHint) {
@@ -142,15 +141,14 @@ export const updateCommunityDetails = (
       } else if (updatedData.bannerImageHint) {
         community.bannerImageHint = updatedData.bannerImageHint;
       }
-    } else if (nameChanged) { // Only update placeholder if name changed AND no explicit banner given
+    } else if (nameChanged) {
       community.bannerImage = `https://placehold.co/1200x400.png?text=${encodeURIComponent(community.name.substring(0,3))}`;
-      community.bannerImageHint = "community banner";
+      community.bannerImageHint = generateHintFromName(community.name, "banner");
     }
 
     if (updatedData.foundedDate) community.foundedDate = updatedData.foundedDate;
     if (updatedData.rules) community.rules = updatedData.rules;
     
-    // Assign the modified copy back to the array
     initialCommunities[communityIndex] = community;
     return community;
   }
