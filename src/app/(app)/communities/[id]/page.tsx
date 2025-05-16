@@ -14,7 +14,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { ArrowLeft, Users, Edit3, MessageSquarePlus, Settings, ArrowBigUp, MessageCircle as MessageCircleIcon, Loader2 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import type { Community, PostInCommunity } from '../page'; 
-import { getCommunityById, addPostToCommunity } from '../page'; 
+import { getCommunityById, addPostToCommunity, updateCommunityDetails } from '../page'; 
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext'; 
 import { cn } from '@/lib/utils';
@@ -31,6 +31,12 @@ export default function CommunityDetailPage() {
   const [newPostTitle, setNewPostTitle] = useState("");
   const [newPostContent, setNewPostContent] = useState("");
   const [isSubmittingNewPost, setIsSubmittingNewPost] = useState(false);
+
+  const [isEditCommunityDialogOpen, setIsEditCommunityDialogOpen] = useState(false);
+  const [editCommunityName, setEditCommunityName] = useState("");
+  const [editCommunityDescription, setEditCommunityDescription] = useState("");
+  const [editCommunityLongDescription, setEditCommunityLongDescription] = useState("");
+  const [isSubmittingEditCommunity, setIsSubmittingEditCommunity] = useState(false);
 
   const communityId = typeof params.id === 'string' ? params.id : undefined;
 
@@ -62,9 +68,47 @@ export default function CommunityDetailPage() {
     { id: 'm4', name: 'Michael B.', avatar: 'https://placehold.co/40x40.png?text=MB', avatarHint: 'man smiling' },
   ];
 
-  const handleEditCommunity = () => {
-    toast({ title: "Edit Community", description: "This would open an edit form for the community. (Not implemented)" });
+  const handleOpenEditCommunityDialog = () => {
+    if (!community) return;
+    setEditCommunityName(community.name);
+    setEditCommunityDescription(community.description);
+    setEditCommunityLongDescription(community.longDescription || community.description);
+    setIsEditCommunityDialogOpen(true);
   };
+
+  const handleEditCommunitySubmit = async () => {
+    if (!community || !communityId) {
+      toast({ title: "Error", description: "Community data missing.", variant: "destructive" });
+      return;
+    }
+    if (!editCommunityName.trim() || !editCommunityDescription.trim()) {
+      toast({ title: "Missing Information", description: "Please provide a name and description.", variant: "destructive" });
+      return;
+    }
+
+    setIsSubmittingEditCommunity(true);
+    try {
+      const updatedCommunityData = updateCommunityDetails(communityId, {
+        name: editCommunityName,
+        description: editCommunityDescription,
+        longDescription: editCommunityLongDescription,
+      });
+
+      if (updatedCommunityData) {
+        setCommunity(updatedCommunityData); // Update local state to reflect changes
+        toast({ title: "Community Updated", description: "Community details have been saved." });
+        setIsEditCommunityDialogOpen(false);
+      } else {
+        toast({ title: "Error", description: "Could not update community details.", variant: "destructive" });
+      }
+    } catch (error) {
+      console.error("Error updating community:", error);
+      toast({ title: "Error", description: "An unexpected error occurred.", variant: "destructive" });
+    } finally {
+      setIsSubmittingEditCommunity(false);
+    }
+  };
+
 
   const handleOpenNewPostDialog = () => {
     if (!community || !communityId || !user) {
@@ -206,9 +250,44 @@ export default function CommunityDetailPage() {
         </Button>
         {/* Community Actions */}
         <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={handleEditCommunity}>
-                <Edit3 className="mr-2 h-4 w-4" /> Edit Community
-            </Button>
+            <Dialog open={isEditCommunityDialogOpen} onOpenChange={setIsEditCommunityDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" onClick={handleOpenEditCommunityDialog}>
+                    <Edit3 className="mr-2 h-4 w-4" /> Edit Community
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[525px]">
+                <DialogHeader>
+                  <DialogTitle>Edit Community Details</DialogTitle>
+                  <DialogDescription>
+                    Update the name and description for the {community.name} community.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="editCommunityName" className="text-right">Name</Label>
+                    <Input id="editCommunityName" value={editCommunityName} onChange={(e) => setEditCommunityName(e.target.value)} className="col-span-3" disabled={isSubmittingEditCommunity} />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="editCommunityDescription" className="text-right">Description</Label>
+                    <Textarea id="editCommunityDescription" value={editCommunityDescription} onChange={(e) => setEditCommunityDescription(e.target.value)} className="col-span-3" rows={3} disabled={isSubmittingEditCommunity} />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="editCommunityLongDescription" className="text-right">Full Details</Label>
+                    <Textarea id="editCommunityLongDescription" value={editCommunityLongDescription} onChange={(e) => setEditCommunityLongDescription(e.target.value)} className="col-span-3" rows={5} disabled={isSubmittingEditCommunity} />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <DialogClose asChild>
+                    <Button type="button" variant="outline" disabled={isSubmittingEditCommunity}>Cancel</Button>
+                  </DialogClose>
+                  <Button type="button" onClick={handleEditCommunitySubmit} disabled={isSubmittingEditCommunity || !editCommunityName.trim() || !editCommunityDescription.trim()}>
+                    {isSubmittingEditCommunity ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...</> : "Save Changes"}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+
             <Dialog open={isNewPostDialogOpen} onOpenChange={setIsNewPostDialogOpen}>
               <DialogTrigger asChild>
                 <Button onClick={handleOpenNewPostDialog}>
@@ -423,5 +502,3 @@ export default function CommunityDetailPage() {
     </div>
   );
 }
-
-    
