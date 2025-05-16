@@ -17,7 +17,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
-import { ArrowLeft, PlusCircle } from "lucide-react";
+import { ArrowLeft, PlusCircle, Loader2 } from "lucide-react";
 
 export default function CreateCommunityPage() {
   const router = useRouter();
@@ -52,18 +52,19 @@ export default function CreateCommunityPage() {
     // In a real app, you would likely add the new community to a global state or re-fetch
     // For now, we just navigate back
     router.push("/communities");
+    // setIsSubmitting(false); // Not strictly necessary if navigating away immediately
   };
 
   return (
     <div className="space-y-8 max-w-2xl mx-auto">
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-4">
         <Button variant="outline" size="icon" asChild>
             <Link href="/communities">
-                <ArrowLeft className="h-4 w-4" />
+                <ArrowLeft className="h-5 w-5" />
                 <span className="sr-only">Back to Communities</span>
             </Link>
         </Button>
-        <h1 className="text-2xl font-bold">Create a New Community</h1>
+        <h1 className="text-3xl font-bold">Create New Community</h1>
       </div>
       
       <Card className="shadow-lg">
@@ -84,6 +85,7 @@ export default function CreateCommunityPage() {
                 placeholder="e.g., Diabetes Support Group"
                 required
                 disabled={isSubmitting}
+                className="text-base"
               />
             </div>
             <div className="space-y-2">
@@ -96,6 +98,7 @@ export default function CreateCommunityPage() {
                 rows={5}
                 required
                 disabled={isSubmitting}
+                className="text-base"
               />
             </div>
              {/* Placeholder for image upload in the future
@@ -108,12 +111,20 @@ export default function CreateCommunityPage() {
             </div>
             */}
           </CardContent>
-          <CardFooter className="flex justify-end gap-2">
+          <CardFooter className="flex justify-end gap-2 pt-6">
             <Button variant="outline" asChild disabled={isSubmitting}>
               <Link href="/communities">Cancel</Link>
             </Button>
-            <Button type="submit" disabled={isSubmitting || !communityName.trim() || !communityDescription.trim()}>
-              {isSubmitting ? "Creating..." : (
+            <Button 
+              type="submit" 
+              disabled={isSubmitting || !communityName.trim() || !communityDescription.trim()}
+              className="min-w-[160px]"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creating...
+                </>
+              ) : (
                 <>
                   <PlusCircle className="mr-2 h-4 w-4" /> Create Community
                 </>
