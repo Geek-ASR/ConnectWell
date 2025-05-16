@@ -19,7 +19,7 @@ export interface Community {
   id: string;
   name: string;
   description: string;
-  longDescription?: string;
+  longDescription: string; // Changed from optional to required
   members: number;
   image: string;
   imageHint: string;
@@ -45,12 +45,12 @@ export const getAllCommunities = (): Community[] => {
   return [...initialCommunities]; // Return a copy to prevent direct mutation from outside
 };
 
-export const addCommunity = (communityData: { name: string; description: string; longDescription?: string }): Community => {
+export const addCommunity = (communityData: { name: string; description: string; longDescription: string }): Community => {
   const newCommunity: Community = {
     id: Date.now().toString(),
     name: communityData.name,
     description: communityData.description,
-    longDescription: communityData.longDescription || communityData.description,
+    longDescription: communityData.longDescription, // Now expects longDescription
     members: 0, // Initial members count
     image: `https://placehold.co/400x250.png?text=${encodeURIComponent(communityData.name.substring(0,3))}`,
     imageHint: "community topic",
@@ -91,7 +91,8 @@ export const updateCommunityDetails = (
     const community = initialCommunities[communityIndex];
     if (updatedData.name) community.name = updatedData.name;
     if (updatedData.description) community.description = updatedData.description;
-    if (updatedData.longDescription) community.longDescription = updatedData.longDescription;
+    // Ensure longDescription is updated, and falls back to description if not explicitly provided during update
+    community.longDescription = updatedData.longDescription || updatedData.description || community.longDescription;
     
     // If name changes, update placeholder images (optional, but good for consistency)
     if (updatedData.name) {

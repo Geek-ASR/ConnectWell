@@ -1,8 +1,9 @@
 
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useFormState, useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -18,56 +19,61 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import { ArrowLeft, PlusCircle, Loader2 } from "lucide-react";
-import { addCommunity } from '@/lib/community-service'; // Import from the new service
+import { createCommunityAction, type CreateCommunityFormState } from '@/actions/community-actions';
+
+function SubmitButton() {
+  const { pending } = useFormStatus();
+  return (
+    <Button 
+      type="submit" 
+      disabled={pending}
+      className="min-w-[160px]"
+    >
+      {pending ? (
+        <>
+          <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creating...
+        </>
+      ) : (
+        <>
+          <PlusCircle className="mr-2 h-4 w-4" /> Create Community
+        </>
+      )}
+    </Button>
+  );
+}
 
 export default function CreateCommunityPage() {
   const router = useRouter();
   const { toast } = useToast();
+
+  const initialState: CreateCommunityFormState = { success: false };
+  const [formState, formAction] = useFormState(createCommunityAction, initialState);
+  
+  // To keep input fields controlled if needed, or clear them after success
   const [communityName, setCommunityName] = useState("");
   const [communityDescription, setCommunityDescription] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [communityLongDescription, setCommunityLongDescription] = useState("");
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setIsSubmitting(true);
 
-    if (!communityName.trim() || !communityDescription.trim()) {
-      toast({
-        variant: "destructive",
-        title: "Missing Information",
-        description: "Please fill out both community name and description.",
-      });
-      setIsSubmitting(false);
-      return;
-    }
-
-    try {
-      // Add the community using the centralized service
-      addCommunity({ 
-        name: communityName, 
-        description: communityDescription, 
-        longDescription: communityDescription 
-      });
-      
-      console.log("Creating community (simulated API call):", { communityName, communityDescription });
-      await new Promise(resolve => setTimeout(resolve, 1000)); 
-
+  useEffect(() => {
+    if (formState?.success && formState.community) {
       toast({
         title: "Community Created!",
-        description: `The community "${communityName}" has been successfully created.`,
+        description: formState.message || `The community "${formState.community.name}" has been successfully created.`,
       });
+      // Reset form fields
+      setCommunityName("");
+      setCommunityDescription("");
+      setCommunityLongDescription("");
       router.push("/communities");
-
-    } catch (error) {
-      console.error("Error creating community:", error);
+    } else if (formState?.message && !formState.success) {
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "Could not create community. Please try again.",
+        title: "Error Creating Community",
+        description: formState.message,
       });
-      setIsSubmitting(false);
     }
-  };
+  }, [formState, router, toast]);
 
   return (
     <div className="space-y-8 max-w-2xl mx-auto">
@@ -82,7 +88,7 @@ export default function CreateCommunityPage() {
       </div>
       
       <Card className="shadow-lg">
-        <form onSubmit={handleSubmit}>
+        <form action={formAction}>
           <CardHeader>
             <CardTitle>Community Details</CardTitle>
             <CardDescription>
@@ -94,47 +100,54 @@ export default function CreateCommunityPage() {
               <Label htmlFor="communityName">Community Name</Label>
               <Input
                 id="communityName"
+                name="communityName"
                 value={communityName}
                 onChange={(e) => setCommunityName(e.target.value)}
                 placeholder="e.g., Diabetes Support Group"
                 required
-                disabled={isSubmitting}
                 className="text-base"
               />
+              {formState?.fieldErrors?.communityName && (
+                <p className="text-sm text-destructive">{formState.fieldErrors.communityName}</p>
+              )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="communityDescription">Description</Label>
+              <Label htmlFor="communityDescription">Short Description</Label>
               <Textarea
                 id="communityDescription"
+                name="communityDescription"
                 value={communityDescription}
                 onChange={(e) => setCommunityDescription(e.target.value)}
-                placeholder="Share what this community is about, its goals, and who it's for."
-                rows={5}
+                placeholder="A brief overview of the community (shows on listing cards)."
+                rows={3}
                 required
-                disabled={isSubmitting}
                 className="text-base"
               />
+              {formState?.fieldErrors?.communityDescription && (
+                <p className="text-sm text-destructive">{formState.fieldErrors.communityDescription}</p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="communityLongDescription">Full Details / Long Description</Label>
+              <Textarea
+                id="communityLongDescription"
+                name="communityLongDescription"
+                value={communityLongDescription}
+                onChange={(e) => setCommunityLongDescription(e.target.value)}
+                placeholder="Share what this community is about in more detail, its goals, and who it's for. This shows on the community's main page."
+                rows={5}
+                className="text-base"
+              />
+               {formState?.fieldErrors?.communityLongDescription && (
+                <p className="text-sm text-destructive">{formState.fieldErrors.communityLongDescription}</p>
+              )}
             </div>
           </CardContent>
           <CardFooter className="flex justify-end gap-2 pt-6">
-            <Button variant="outline" asChild disabled={isSubmitting}>
+            <Button variant="outline" asChild>
               <Link href="/communities">Cancel</Link>
             </Button>
-            <Button 
-              type="submit" 
-              disabled={isSubmitting || !communityName.trim() || !communityDescription.trim()}
-              className="min-w-[160px]"
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creating...
-                </>
-              ) : (
-                <>
-                  <PlusCircle className="mr-2 h-4 w-4" /> Create Community
-                </>
-              )}
-            </Button>
+            <SubmitButton />
           </CardFooter>
         </form>
       </Card>
