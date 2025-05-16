@@ -18,14 +18,28 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext'; 
 import { cn } from '@/lib/utils';
 import type { Community, PostInCommunity } from '@/lib/community-service'; 
-import { getCommunityById, addPostToCommunity } from '@/lib/community-service';
-import { updateCommunityAction, type UpdateCommunityFormState } from '@/actions/community-actions';
+import { getCommunityById } from '@/lib/community-service'; // Removed addPostToCommunity, updateCommunityDetails
+import { 
+  updateCommunityAction, 
+  createPostInCommunityAction, 
+  type UpdateCommunityFormState,
+  type CreatePostInCommunityFormState 
+} from '@/actions/community-actions';
 
 function EditCommunitySubmitButton() {
   const { pending } = useFormStatus();
   return (
     <Button type="submit" disabled={pending}>
       {pending ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...</> : "Save Changes"}
+    </Button>
+  );
+}
+
+function CreatePostSubmitButton() {
+  const { pending } = useFormStatus();
+  return (
+    <Button type="submit" disabled={pending}>
+      {pending ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Posting...</> : "Create Post"}
     </Button>
   );
 }
@@ -40,9 +54,9 @@ export default function CommunityDetailPage() {
   const [loading, setLoading] = useState(true);
 
   const [isNewPostDialogOpen, setIsNewPostDialogOpen] = useState(false);
+  // Local state for controlled inputs in New Post dialog
   const [newPostTitle, setNewPostTitle] = useState("");
   const [newPostContent, setNewPostContent] = useState("");
-  const [isSubmittingNewPost, setIsSubmittingNewPost] = useState(false);
 
   const [isEditCommunityDialogOpen, setIsEditCommunityDialogOpen] = useState(false);
   // State for controlled inputs in edit dialog
@@ -52,14 +66,19 @@ export default function CommunityDetailPage() {
 
   const communityId = typeof params.id === 'string' ? params.id : undefined;
 
+  // Edit Community Form Action
   const initialEditFormState: UpdateCommunityFormState = { success: false };
-  // Ensure communityId is defined before binding
   const boundUpdateCommunityAction = communityId ? updateCommunityAction.bind(null, communityId) : null;
   const [editFormState, editFormAction] = useFormState(
-    boundUpdateCommunityAction || (() => Promise.resolve(initialEditFormState)), // Provide a no-op if bound action is null
+    boundUpdateCommunityAction || (() => Promise.resolve(initialEditFormState)), 
     initialEditFormState
   );
 
+  // Create Post Form Action
+  const initialCreatePostFormState: CreatePostInCommunityFormState = { success: false };
+  // No need to bind anything complex here initially for createPostInCommunityAction,
+  // as communityId and user details will be passed via hidden form fields.
+  const [createPostFormState, formActionCreatePost] = useFormState(createPostInCommunityAction, initialCreatePostFormState);
 
   useEffect(() => {
     if (communityId) {
@@ -71,23 +90,24 @@ export default function CommunityDetailPage() {
         setCurrentEditLongDescription(foundCommunity.longDescription || foundCommunity.description);
       } else {
         console.error("Community not found with ID:", communityId);
+        // Consider redirecting or showing a more prominent not found message
       }
     }
     setLoading(false);
   }, [communityId]);
 
+  // Effect for Edit Community Action result
   useEffect(() => {
     if (editFormState?.success && editFormState.community) {
       toast({
         title: "Community Updated!",
         description: editFormState.message || `The community "${editFormState.community.name}" has been updated.`,
       });
-      setCommunity(editFormState.community); // Update local community state
-      // Optionally re-sync currentEdit states if dialog remains open or for next open
+      setCommunity(editFormState.community); 
       setCurrentEditName(editFormState.community.name);
       setCurrentEditDescription(editFormState.community.description);
       setCurrentEditLongDescription(editFormState.community.longDescription || editFormState.community.description);
-      setIsEditCommunityDialogOpen(false); // Close dialog on success
+      setIsEditCommunityDialogOpen(false); 
     } else if (editFormState?.message && !editFormState.success) {
       toast({
         variant: "destructive",
@@ -96,6 +116,30 @@ export default function CommunityDetailPage() {
       });
     }
   }, [editFormState, toast]);
+
+  // Effect for Create Post Action result
+  useEffect(() => {
+    if (createPostFormState?.success && createPostFormState.post && communityId) {
+      toast({
+        title: "Post Created!",
+        description: createPostFormState.message || "Your post has been added.",
+      });
+      // Re-fetch community data to include the new post
+      const updatedCommunityData = getCommunityById(communityId);
+      if (updatedCommunityData) {
+        setCommunity(updatedCommunityData);
+      }
+      setIsNewPostDialogOpen(false);
+      setNewPostTitle("");
+      setNewPostContent("");
+    } else if (createPostFormState?.message && !createPostFormState.success) {
+      toast({
+        variant: "destructive",
+        title: "Error Creating Post",
+        description: createPostFormState.message,
+      });
+    }
+  }, [createPostFormState, toast, communityId]);
 
 
   const getInitials = (name: string | null | undefined) => {
@@ -116,65 +160,21 @@ export default function CommunityDetailPage() {
 
   const handleOpenEditCommunityDialog = () => {
     if (!community) return;
-    // Pre-fill form with current community details
     setCurrentEditName(community.name);
     setCurrentEditDescription(community.description);
     setCurrentEditLongDescription(community.longDescription || community.description);
     setIsEditCommunityDialogOpen(true);
   };
 
-
   const handleOpenNewPostDialog = () => {
     if (!community || !communityId || !user) {
       toast({ title: "Error", description: "Cannot create post. Community or user data missing.", variant: "destructive" });
       return;
     }
-    setNewPostTitle("");
+    setNewPostTitle(""); // Reset local state for dialog inputs
     setNewPostContent("");
     setIsNewPostDialogOpen(true);
   };
-
-  const handleCreatePostSubmit = async () => {
-    if (!community || !communityId || !user) {
-      toast({ title: "Error", description: "Cannot create post. Community or user data missing.", variant: "destructive" });
-      return;
-    }
-    if (!newPostTitle.trim() || !newPostContent.trim()) {
-      toast({ title: "Missing Information", description: "Please provide a title and content for your post.", variant: "destructive" });
-      return;
-    }
-
-    setIsSubmittingNewPost(true);
-    try {
-      const postAdded = addPostToCommunity(communityId, {
-        userId: user.uid,
-        userName: user.displayName || 'Anonymous User',
-        userAvatar: user.photoURL || `https://placehold.co/40x40.png?text=${getInitials(user.displayName)}`,
-        userAvatarHint: 'user avatar',
-        title: newPostTitle,
-        content: newPostContent
-      });
-
-      if (postAdded) {
-        const updatedCommunityData = getCommunityById(communityId); 
-        if (updatedCommunityData) {
-          setCommunity(updatedCommunityData);
-        }
-        toast({ title: "Post Created", description: "Your post has been added to the community." });
-        setIsNewPostDialogOpen(false);
-        setNewPostTitle(""); 
-        setNewPostContent("");
-      } else {
-        toast({ title: "Error", description: "Could not add post to the community.", variant: "destructive" });
-      }
-    } catch (error) {
-      console.error("Error creating post:", error);
-      toast({ title: "Error", description: "An unexpected error occurred while creating the post.", variant: "destructive" });
-    } finally {
-      setIsSubmittingNewPost(false);
-    }
-  };
-
 
   const handleViewAllMembers = () => {
     toast({ title: "View All Members", description: `Displaying all ${community?.members || 0} members. (Not implemented)` });
@@ -262,6 +262,7 @@ export default function CommunityDetailPage() {
           </Link>
         </Button>
         <div className="flex items-center gap-2">
+            {/* Edit Community Dialog */}
             <Dialog open={isEditCommunityDialogOpen} onOpenChange={setIsEditCommunityDialogOpen}>
               <DialogTrigger asChild>
                 <Button variant="outline" onClick={handleOpenEditCommunityDialog} disabled={!boundUpdateCommunityAction}>
@@ -329,6 +330,7 @@ export default function CommunityDetailPage() {
               </DialogContent>
             </Dialog>
 
+            {/* New Post Dialog */}
             <Dialog open={isNewPostDialogOpen} onOpenChange={setIsNewPostDialogOpen}>
               <DialogTrigger asChild>
                 <Button onClick={handleOpenNewPostDialog}>
@@ -336,61 +338,66 @@ export default function CommunityDetailPage() {
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[525px]">
-                <DialogHeader>
-                  <DialogTitle>Create a New Post</DialogTitle>
-                  <DialogDescription>
-                    Share your thoughts or start a discussion in the {community.name} community.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="grid gap-4 py-4">
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="newPostTitle" className="text-right">
-                      Title
-                    </Label>
-                    <Input
-                      id="newPostTitle"
-                      value={newPostTitle}
-                      onChange={(e) => setNewPostTitle(e.target.value)}
-                      className="col-span-3"
-                      placeholder="Enter post title"
-                      disabled={isSubmittingNewPost}
-                    />
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="newPostContent" className="text-right">
-                      Content
-                    </Label>
-                    <Textarea
-                      id="newPostContent"
-                      value={newPostContent}
-                      onChange={(e) => setNewPostContent(e.target.value)}
-                      className="col-span-3"
-                      placeholder="What's on your mind?"
-                      rows={5}
-                      disabled={isSubmittingNewPost}
-                    />
-                  </div>
-                </div>
-                <DialogFooter>
-                  <DialogClose asChild>
-                    <Button type="button" variant="outline" disabled={isSubmittingNewPost}>
-                      Cancel
-                    </Button>
-                  </DialogClose>
-                  <Button 
-                    type="button" 
-                    onClick={handleCreatePostSubmit} 
-                    disabled={isSubmittingNewPost || !newPostTitle.trim() || !newPostContent.trim()}
-                  >
-                    {isSubmittingNewPost ? (
+                <form action={formActionCreatePost}>
+                  <DialogHeader>
+                    <DialogTitle>Create a New Post</DialogTitle>
+                    <DialogDescription>
+                      Share your thoughts or start a discussion in the {community.name} community.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="grid gap-4 py-4">
+                    {/* Hidden fields for the server action */}
+                    {communityId && <input type="hidden" name="communityId" value={communityId} />}
+                    {user && (
                       <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Posting...
+                        <input type="hidden" name="userId" value={user.uid} />
+                        <input type="hidden" name="userName" value={user.displayName || 'Anonymous User'} />
+                        <input type="hidden" name="userAvatar" value={user.photoURL || ''} />
+                        <input type="hidden" name="userAvatarHint" value="user avatar" />
                       </>
-                    ) : (
-                      "Create Post"
                     )}
-                  </Button>
-                </DialogFooter>
+                    
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="newPostTitle" className="text-right">
+                        Title
+                      </Label>
+                      <Input
+                        id="newPostTitle"
+                        name="newPostTitle" // Name attribute for FormData
+                        value={newPostTitle}
+                        onChange={(e) => setNewPostTitle(e.target.value)}
+                        className="col-span-3"
+                        placeholder="Enter post title"
+                      />
+                       {createPostFormState?.fieldErrors?.newPostTitle && (
+                          <p className="col-span-4 text-sm text-destructive text-right">{createPostFormState.fieldErrors.newPostTitle}</p>
+                        )}
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="newPostContent" className="text-right">
+                        Content
+                      </Label>
+                      <Textarea
+                        id="newPostContent"
+                        name="newPostContent" // Name attribute for FormData
+                        value={newPostContent}
+                        onChange={(e) => setNewPostContent(e.target.value)}
+                        className="col-span-3"
+                        placeholder="What's on your mind?"
+                        rows={5}
+                      />
+                      {createPostFormState?.fieldErrors?.newPostContent && (
+                          <p className="col-span-4 text-sm text-destructive text-right">{createPostFormState.fieldErrors.newPostContent}</p>
+                        )}
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <DialogClose asChild>
+                      <Button type="button" variant="outline">Cancel</Button>
+                    </DialogClose>
+                    <CreatePostSubmitButton />
+                  </DialogFooter>
+                </form>
               </DialogContent>
             </Dialog>
         </div>

@@ -2,7 +2,13 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { addCommunity as addCommunityService, updateCommunityDetails as updateCommunityDetailsService, type Community } from '@/lib/community-service';
+import { 
+  addCommunity as addCommunityService, 
+  updateCommunityDetails as updateCommunityDetailsService, 
+  addPostToCommunity as addPostToCommunityService,
+  type Community,
+  type PostInCommunity 
+} from '@/lib/community-service';
 
 export interface CreateCommunityFormState {
   success: boolean;
@@ -23,6 +29,16 @@ export interface UpdateCommunityFormState {
     editCommunityName?: string;
     editCommunityDescription?: string;
     editCommunityLongDescription?: string;
+  };
+}
+
+export interface CreatePostInCommunityFormState {
+  success: boolean;
+  message?: string;
+  post?: PostInCommunity;
+  fieldErrors?: {
+    newPostTitle?: string;
+    newPostContent?: string;
   };
 }
 
@@ -129,5 +145,59 @@ export async function updateCommunityAction(
   } catch (error) {
     console.error("Error in updateCommunityAction:", error);
     return { success: false, message: 'An unexpected error occurred while updating the community.' };
+  }
+}
+
+export async function createPostInCommunityAction(
+  prevState: CreatePostInCommunityFormState | undefined,
+  formData: FormData
+): Promise<CreatePostInCommunityFormState> {
+  const title = formData.get('newPostTitle') as string;
+  const content = formData.get('newPostContent') as string;
+  const communityId = formData.get('communityId') as string;
+  const userId = formData.get('userId') as string;
+  const userName = formData.get('userName') as string;
+  const userAvatar = formData.get('userAvatar') as string;
+  const userAvatarHint = formData.get('userAvatarHint') as string || 'user avatar';
+
+  const fieldErrors: NonNullable<CreatePostInCommunityFormState['fieldErrors']> = {};
+  if (!title || title.trim() === '') {
+    fieldErrors.newPostTitle = 'Post title is required.';
+  }
+  if (!content || content.trim() === '') {
+    fieldErrors.newPostContent = 'Post content is required.';
+  }
+
+  if (Object.keys(fieldErrors).length > 0) {
+    return { success: false, message: 'Please correct the errors below.', fieldErrors };
+  }
+
+  if (!communityId || !userId || !userName) {
+    return { success: false, message: 'User or community information is missing. Cannot create post.' };
+  }
+
+  try {
+    const newPost = addPostToCommunityService(communityId, {
+      userId,
+      userName,
+      userAvatar: userAvatar || `https://placehold.co/40x40.png?text=${userName.substring(0,2).toUpperCase()}`,
+      userAvatarHint,
+      title,
+      content,
+    });
+
+    if (newPost) {
+      revalidatePath(`/communities/${communityId}`);
+      return {
+        success: true,
+        message: 'Post created successfully!',
+        post: newPost,
+      };
+    } else {
+      return { success: false, message: 'Failed to create post. Community not found or an error occurred.' };
+    }
+  } catch (error) {
+    console.error("Error in createPostInCommunityAction:", error);
+    return { success: false, message: 'An unexpected error occurred while creating the post.' };
   }
 }
