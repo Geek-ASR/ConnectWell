@@ -12,13 +12,13 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft, Users, Edit3, MessageSquarePlus, Settings, ArrowBigUp, MessageCircle as MessageCircleIcon, Loader2 } from 'lucide-react';
+import { ArrowLeft, Users, Edit3, MessageSquarePlus, Settings, ArrowBigUp, MessageCircle as MessageCircleIcon, Loader2, CalendarDays, FileText } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext'; 
 import { cn } from '@/lib/utils';
 import type { Community, PostInCommunity } from '@/lib/community-service'; 
-import { getCommunityById } from '@/lib/community-service'; // Removed addPostToCommunity, updateCommunityDetails
+import { getCommunityById, addPostToCommunity, updateCommunityDetails } from '@/lib/community-service';
 import { 
   updateCommunityAction, 
   createPostInCommunityAction, 
@@ -76,8 +76,6 @@ export default function CommunityDetailPage() {
 
   // Create Post Form Action
   const initialCreatePostFormState: CreatePostInCommunityFormState = { success: false };
-  // No need to bind anything complex here initially for createPostInCommunityAction,
-  // as communityId and user details will be passed via hidden form fields.
   const [createPostFormState, formActionCreatePost] = useFormState(createPostInCommunityAction, initialCreatePostFormState);
 
   useEffect(() => {
@@ -90,7 +88,6 @@ export default function CommunityDetailPage() {
         setCurrentEditLongDescription(foundCommunity.longDescription || foundCommunity.description);
       } else {
         console.error("Community not found with ID:", communityId);
-        // Consider redirecting or showing a more prominent not found message
       }
     }
     setLoading(false);
@@ -124,7 +121,6 @@ export default function CommunityDetailPage() {
         title: "Post Created!",
         description: createPostFormState.message || "Your post has been added.",
       });
-      // Re-fetch community data to include the new post
       const updatedCommunityData = getCommunityById(communityId);
       if (updatedCommunityData) {
         setCommunity(updatedCommunityData);
@@ -151,12 +147,6 @@ export default function CommunityDetailPage() {
     return name.substring(0, 2).toUpperCase();
   };
   
-  const communityMembers = [ 
-    { id: 'm1', name: 'Eva Green', avatar: 'https://placehold.co/40x40.png?text=EG', avatarHint: 'profile photo' },
-    { id: 'm2', name: 'David Lee', avatar: 'https://placehold.co/40x40.png?text=DL', avatarHint: 'user icon' },
-    { id: 'm3', name: 'Olivia Chen', avatar: 'https://placehold.co/40x40.png?text=OC', avatarHint: 'member avatar' },
-    { id: 'm4', name: 'Michael B.', avatar: 'https://placehold.co/40x40.png?text=MB', avatarHint: 'man smiling' },
-  ];
 
   const handleOpenEditCommunityDialog = () => {
     if (!community) return;
@@ -171,7 +161,7 @@ export default function CommunityDetailPage() {
       toast({ title: "Error", description: "Cannot create post. Community or user data missing.", variant: "destructive" });
       return;
     }
-    setNewPostTitle(""); // Reset local state for dialog inputs
+    setNewPostTitle(""); 
     setNewPostContent("");
     setIsNewPostDialogOpen(true);
   };
@@ -204,14 +194,14 @@ export default function CommunityDetailPage() {
   const handleCommentOnPost = (postId: string) => {
     toast({
       title: "Comment",
-      description: `Viewing comments for post ${postId}. (Not implemented)`,
+      description: `Commenting on post ${postId} is not yet implemented.`,
     });
   };
   
   const handleViewPost = (postId: string) => {
     toast({
         title: "View Post",
-        description: `Navigating to full view for post ${postId}. (Not implemented)`,
+        description: `Viewing full post ${postId} is not yet implemented.`,
     });
   };
 
@@ -221,6 +211,7 @@ export default function CommunityDetailPage() {
       <div className="flex justify-center items-center h-screen">
         <Card className="shadow-lg">
             <CardContent className="pt-6">
+                <Loader2 className="mr-2 h-8 w-8 animate-spin text-primary" />
                 <p className="text-xl text-muted-foreground">Loading community details...</p>
             </CardContent>
         </Card>
@@ -262,7 +253,6 @@ export default function CommunityDetailPage() {
           </Link>
         </Button>
         <div className="flex items-center gap-2">
-            {/* Edit Community Dialog */}
             <Dialog open={isEditCommunityDialogOpen} onOpenChange={setIsEditCommunityDialogOpen}>
               <DialogTrigger asChild>
                 <Button variant="outline" onClick={handleOpenEditCommunityDialog} disabled={!boundUpdateCommunityAction}>
@@ -330,7 +320,6 @@ export default function CommunityDetailPage() {
               </DialogContent>
             </Dialog>
 
-            {/* New Post Dialog */}
             <Dialog open={isNewPostDialogOpen} onOpenChange={setIsNewPostDialogOpen}>
               <DialogTrigger asChild>
                 <Button onClick={handleOpenNewPostDialog}>
@@ -346,7 +335,6 @@ export default function CommunityDetailPage() {
                     </DialogDescription>
                   </DialogHeader>
                   <div className="grid gap-4 py-4">
-                    {/* Hidden fields for the server action */}
                     {communityId && <input type="hidden" name="communityId" value={communityId} />}
                     {user && (
                       <>
@@ -363,7 +351,7 @@ export default function CommunityDetailPage() {
                       </Label>
                       <Input
                         id="newPostTitle"
-                        name="newPostTitle" // Name attribute for FormData
+                        name="newPostTitle"
                         value={newPostTitle}
                         onChange={(e) => setNewPostTitle(e.target.value)}
                         className="col-span-3"
@@ -379,7 +367,7 @@ export default function CommunityDetailPage() {
                       </Label>
                       <Textarea
                         id="newPostContent"
-                        name="newPostContent" // Name attribute for FormData
+                        name="newPostContent"
                         value={newPostContent}
                         onChange={(e) => setNewPostContent(e.target.value)}
                         className="col-span-3"
@@ -443,7 +431,7 @@ export default function CommunityDetailPage() {
         <div className="lg:col-span-2 space-y-4">
             <h2 className="text-2xl font-semibold text-foreground mb-4">Recent Posts</h2>
             {(community.posts && community.posts.length > 0) ? (
-                community.posts.map(post => (
+                community.posts.slice().sort((a, b) => new Date(b.id.split('_')[1]).getTime() - new Date(a.id.split('_')[1]).getTime()).map(post => ( // Sort by timestamp in ID
                     <Card key={post.id} className="shadow-md hover:shadow-lg transition-shadow">
                         <CardHeader className="flex flex-row items-start gap-3 pb-3">
                             <Avatar className="h-10 w-10">
@@ -457,7 +445,7 @@ export default function CommunityDetailPage() {
                         </CardHeader>
                         <CardContent>
                             <h3 className="text-lg font-semibold mb-1 text-foreground">{post.title}</h3>
-                            <p className="text-sm text-foreground/90">{post.content}</p>
+                            <p className="text-sm text-foreground/90 whitespace-pre-line">{post.content}</p>
                         </CardContent>
                         <CardFooter className="text-xs text-muted-foreground flex justify-between items-center pt-3 border-t">
                            <div className="flex items-center gap-3">
@@ -482,7 +470,7 @@ export default function CommunityDetailPage() {
                                     <MessageCircleIcon className="h-4 w-4" /> {post.comments} Comment{post.comments !== 1 ? 's' : ''}
                                 </Button>
                             </div>
-                            <Button variant="ghost" size="sm" className="text-xs h-auto p-1" onClick={() => handleViewPost(post.id)}>
+                            <Button variant="ghost" size="sm" className="text-xs h-auto p-1 text-muted-foreground hover:text-primary" onClick={() => handleViewPost(post.id)}>
                                 View Post
                             </Button>
                         </CardFooter>
@@ -500,26 +488,27 @@ export default function CommunityDetailPage() {
         <div className="lg:col-span-1 space-y-6">
             <Card className="shadow-md">
                 <CardHeader>
-                    <CardTitle className="text-xl font-semibold text-foreground">Community Members</CardTitle>
+                    <CardTitle className="text-xl font-semibold text-foreground">Community Members ({community.members})</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                    {communityMembers.slice(0, 5).map(member => ( 
-                        <div key={member.id} className="flex items-center gap-3 hover:bg-accent/50 p-2 rounded-md transition-colors">
-                            <Avatar className="h-9 w-9">
-                                <AvatarImage src={member.avatar} alt={member.name} data-ai-hint={member.avatarHint} />
-                                <AvatarFallback>{getInitials(member.name)}</AvatarFallback>
-                            </Avatar>
-                            <span className="text-sm font-medium text-foreground">{member.name}</span>
-                        </div>
-                    ))}
+                    {community.members > 0 ? (
+                        Array.from({ length: Math.min(community.members, 5) }).map((_, index) => ( 
+                            <div key={`member-placeholder-${index}`} className="flex items-center gap-3 hover:bg-accent/50 p-2 rounded-md transition-colors">
+                                <Avatar className="h-9 w-9">
+                                    <AvatarImage src={`https://placehold.co/40x40.png?text=M${index+1}`} alt={`Member ${index+1}`} data-ai-hint="user avatar" />
+                                    <AvatarFallback>{`M${index+1}`}</AvatarFallback>
+                                </Avatar>
+                                <span className="text-sm font-medium text-foreground">{`Community Member ${index+1}`}</span>
+                            </div>
+                        ))
+                    ) : (
+                         <p className="text-sm text-muted-foreground">No members yet.</p>
+                    )}
                     {community.members > 5 && (
                         <Button variant="link" className="p-0 h-auto text-sm w-full justify-start mt-2 text-primary hover:text-primary/80" onClick={handleViewAllMembers}>
                             View all {community.members} members
                         </Button>
                     )}
-                     {community.members === 0 && (
-                         <p className="text-sm text-muted-foreground">No members yet.</p>
-                     )}
                 </CardContent>
             </Card>
 
@@ -527,14 +516,20 @@ export default function CommunityDetailPage() {
                 <CardHeader>
                     <CardTitle className="text-xl font-semibold text-foreground">About this Community</CardTitle>
                 </CardHeader>
-                <CardContent className="text-sm space-y-3">
+                <CardContent className="text-sm space-y-4">
                     <div className="flex items-center">
-                        <strong className="w-20 text-muted-foreground">Founded:</strong>
-                        <span className="text-foreground">January 2024 <span className="text-xs text-muted-foreground">(Placeholder)</span></span>
+                        <CalendarDays className="h-5 w-5 mr-3 text-muted-foreground" />
+                        <div>
+                            <strong className="block text-muted-foreground">Founded</strong>
+                            <span className="text-foreground">{community.foundedDate}</span>
+                        </div>
                     </div>
                      <div className="flex items-start">
-                        <strong className="w-20 text-muted-foreground shrink-0">Rules:</strong>
-                        <span className="text-foreground">Be respectful, share constructively, no medical advice (consult professionals). <span className="text-xs text-muted-foreground">(Placeholder)</span></span>
+                        <FileText className="h-5 w-5 mr-3 text-muted-foreground shrink-0 mt-0.5" />
+                        <div>
+                            <strong className="block text-muted-foreground">Rules</strong>
+                            <p className="text-foreground whitespace-pre-line">{community.rules}</p>
+                        </div>
                     </div>
                     <Button variant="outline" size="sm" className="w-full mt-4" onClick={handleCommunitySettings}>
                         <Settings className="mr-2 h-4 w-4" /> Community Settings
