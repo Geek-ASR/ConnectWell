@@ -1,19 +1,48 @@
 
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { PlusCircle, Search, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import React, { useState, useEffect } from "react";
+
+interface Community {
+  id: string;
+  name: string;
+  description: string;
+  members: number;
+  image: string;
+  imageHint: string;
+}
+
+const initialCommunities: Community[] = [
+  { id: "1", name: "Diabetes Support Group", description: "Sharing experiences and tips for managing diabetes.", members: 120, image: "https://placehold.co/400x250.png", imageHint: "health group" },
+  { id: "2", name: "Ankylosing Spondylitis Warriors", description: "A community for those fighting AS.", members: 75, image: "https://placehold.co/400x250.png", imageHint: "wellness community" },
+  { id: "3", name: "Mental Wellness Advocates", description: "Support for mental health challenges and triumphs.", members: 250, image: "https://placehold.co/400x250.png", imageHint: "support circle" },
+  { id: "4", name: "Chronic Pain Navigators", description: "Coping strategies and support for chronic pain.", members: 90, image: "https://placehold.co/400x250.png", imageHint: "patient group" },
+  { id: "5", name: "Allergy & Asthma Network", description: "Connect with others managing allergies and asthma.", members: 150, image: "https://placehold.co/400x250.png", imageHint: "breathing health" },
+  { id: "6", name: "Heart Health Champions", description: "A group focused on cardiovascular wellness and recovery.", members: 180, image: "https://placehold.co/400x250.png", imageHint: "heartbeat monitor" },
+];
 
 export default function CommunitiesPage() {
-  // Placeholder data
-  const communities = [
-    { id: "1", name: "Diabetes Support Group", description: "Sharing experiences and tips for managing diabetes.", members: 120, image: "https://placehold.co/400x250.png", imageHint: "health group" },
-    { id: "2", name: "Ankylosing Spondylitis Warriors", description: "A community for those fighting AS.", members: 75, image: "https://placehold.co/400x250.png", imageHint: "wellness community" },
-    { id: "3", name: "Mental Wellness Advocates", description: "Support for mental health challenges and triumphs.", members: 250, image: "https://placehold.co/400x250.png", imageHint: "support circle" },
-    { id: "4", name: "Chronic Pain Navigators", description: "Coping strategies and support for chronic pain.", members: 90, image: "https://placehold.co/400x250.png", imageHint: "patient group" },
-  ];
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredCommunities, setFilteredCommunities] = useState<Community[]>(initialCommunities);
+
+  useEffect(() => {
+    const lowercasedSearchTerm = searchTerm.toLowerCase();
+    const results = initialCommunities.filter(community =>
+      community.name.toLowerCase().includes(lowercasedSearchTerm) ||
+      community.description.toLowerCase().includes(lowercasedSearchTerm)
+    );
+    setFilteredCommunities(results);
+  }, [searchTerm]);
+
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(event.target.value);
+  };
 
   return (
     <div className="space-y-8">
@@ -34,14 +63,20 @@ export default function CommunitiesPage() {
         <CardContent>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-            <Input type="search" placeholder="Search communities (e.g., Diabetes, Arthritis)" className="pl-10 w-full md:w-1/2" />
+            <Input
+              type="search"
+              placeholder="Search communities (e.g., Diabetes, Arthritis)"
+              className="pl-10 w-full md:w-1/2"
+              value={searchTerm}
+              onChange={handleSearchChange}
+            />
           </div>
         </CardContent>
       </Card>
 
-      {communities.length > 0 ? (
+      {filteredCommunities.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {communities.map((community) => (
+          {filteredCommunities.map((community) => (
             <Card key={community.id} className="flex flex-col overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300">
               <Image
                 src={community.image}
@@ -72,7 +107,11 @@ export default function CommunitiesPage() {
       ) : (
         <Card>
           <CardContent className="pt-6 text-center">
-            <p className="text-lg text-muted-foreground">No communities found. Try a different search or create one!</p>
+            {searchTerm ? (
+                <p className="text-lg text-muted-foreground">No communities found matching your search for &quot;{searchTerm}&quot;. Try a different term or create one!</p>
+            ) : (
+                <p className="text-lg text-muted-foreground">No communities available. Why not create one?</p>
+            )}
           </CardContent>
         </Card>
       )}
