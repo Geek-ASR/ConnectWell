@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation"; // Import usePathname
 import { useAuth } from "@/contexts/AuthContext";
 import {
   SidebarProvider,
@@ -29,6 +29,7 @@ export default function AppLayout({
 }) {
   const { user, loading, logout } = useAuth();
   const router = useRouter();
+  const pathname = usePathname(); // Get current pathname
 
   useEffect(() => {
     if (!loading && !user) {
@@ -73,7 +74,7 @@ export default function AppLayout({
               <SidebarMenuItem key={item.label}>
                 <SidebarMenuButton
                   asChild
-                  // isActive={router.pathname === item.href} // Next 13 App Router needs usePathname()
+                  isActive={pathname === item.href} // Set isActive based on current path
                   tooltip={item.label}
                   disabled={item.disabled}
                 >
