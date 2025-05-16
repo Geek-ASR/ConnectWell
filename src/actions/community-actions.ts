@@ -9,6 +9,7 @@ import {
   type Community,
   type PostInCommunity 
 } from '@/lib/community-service';
+import { generateImage } from '@/ai/flows/generate-image-flow';
 
 export interface CreateCommunityFormState {
   success: boolean;
@@ -59,10 +60,9 @@ export async function createCommunityAction(
   if (!description || description.trim() === '') {
     fieldErrors.communityDescription = 'Description is required.';
   }
-  // Optional: Add validation for longDescription if needed
-  // if (!longDescription || longDescription.trim() === '') {
-  //   fieldErrors.communityLongDescription = 'Full details are required.';
-  // }
+  if (!longDescription || longDescription.trim() === '') {
+    fieldErrors.communityLongDescription = 'Full details are required.';
+  }
 
 
   if (Object.keys(fieldErrors).length > 0) {
@@ -74,18 +74,43 @@ export async function createCommunityAction(
   }
 
   try {
-    const newCommunity = addCommunityService({
+    let newCommunity = addCommunityService({ // Make newCommunity mutable
       name,
       description,
       longDescription,
     });
 
     if (newCommunity) {
+      let iconGenerationMessage = 'Using placeholder icon.';
+      try {
+        const imagePrompt = `A unique, modern, abstract icon for an online community named '${newCommunity.name}', focusing on themes of connection and support. Suitable for a small avatar.`;
+        const generatedImageOutput = await generateImage({ prompt: imagePrompt });
+
+        if (generatedImageOutput.imageDataUri) {
+          const updatedCommunityWithImage = updateCommunityDetailsService(newCommunity.id, {
+            image: generatedImageOutput.imageDataUri,
+          });
+          if (updatedCommunityWithImage) {
+            newCommunity = updatedCommunityWithImage; // update the community object
+            iconGenerationMessage = 'Icon generation successful.';
+          } else {
+            console.warn(`Failed to update community ${newCommunity.id} with generated image.`);
+            iconGenerationMessage = 'Icon generation attempted, but update failed.';
+          }
+        } else {
+            iconGenerationMessage = 'Icon generation attempted, but no image was returned.';
+        }
+      } catch (genError) {
+        console.error("Error generating image for community:", genError);
+        iconGenerationMessage = 'Icon generation failed.';
+        // Community is still created, but with placeholder image.
+      }
+
       revalidatePath('/communities');
       revalidatePath('/communities/create'); 
       return { 
         success: true, 
-        message: `Community "${newCommunity.name}" created successfully!`,
+        message: `Community "${newCommunity.name}" created successfully! ${iconGenerationMessage}`,
         community: newCommunity 
       };
     } else {

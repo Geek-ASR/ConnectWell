@@ -19,7 +19,7 @@ export interface Community {
   id: string;
   name: string;
   description: string;
-  longDescription: string; // Changed from optional to required
+  longDescription: string;
   members: number;
   image: string;
   imageHint: string;
@@ -42,7 +42,7 @@ export const getCommunityById = (id: string): Community | undefined => {
 };
 
 export const getAllCommunities = (): Community[] => {
-  return [...initialCommunities]; // Return a copy to prevent direct mutation from outside
+  return [...initialCommunities];
 };
 
 export const addCommunity = (communityData: { name: string; description: string; longDescription: string }): Community => {
@@ -50,15 +50,15 @@ export const addCommunity = (communityData: { name: string; description: string;
     id: Date.now().toString(),
     name: communityData.name,
     description: communityData.description,
-    longDescription: communityData.longDescription, // Now expects longDescription
-    members: 0, // Initial members count
+    longDescription: communityData.longDescription,
+    members: 0,
     image: `https://placehold.co/400x250.png?text=${encodeURIComponent(communityData.name.substring(0,3))}`,
     imageHint: "community topic",
     bannerImage: `https://placehold.co/1200x400.png?text=${encodeURIComponent(communityData.name.substring(0,3))}`,
     bannerImageHint: "community banner",
     posts: [],
   };
-  initialCommunities.unshift(newCommunity); // Add to the beginning of the array
+  initialCommunities.unshift(newCommunity);
   return newCommunity;
 };
 
@@ -84,22 +84,54 @@ export const addPostToCommunity = (
 
 export const updateCommunityDetails = (
   communityId: string,
-  updatedData: { name?: string; description?: string; longDescription?: string }
+  updatedData: {
+    name?: string;
+    description?: string;
+    longDescription?: string;
+    image?: string;
+    imageHint?: string;
+    bannerImage?: string;
+    bannerImageHint?: string;
+  }
 ): Community | null => {
   const communityIndex = initialCommunities.findIndex(c => c.id === communityId);
   if (communityIndex > -1) {
-    const community = initialCommunities[communityIndex];
-    if (updatedData.name) community.name = updatedData.name;
+    const community = { ...initialCommunities[communityIndex] }; // Work on a copy
+
+    let nameChanged = false;
+    if (updatedData.name && updatedData.name !== community.name) {
+      community.name = updatedData.name;
+      nameChanged = true;
+    }
     if (updatedData.description) community.description = updatedData.description;
-    // Ensure longDescription is updated, and falls back to description if not explicitly provided during update
     community.longDescription = updatedData.longDescription || updatedData.description || community.longDescription;
-    
-    // If name changes, update placeholder images (optional, but good for consistency)
-    if (updatedData.name) {
-        community.image = `https://placehold.co/400x250.png?text=${encodeURIComponent(updatedData.name.substring(0,3))}`;
-        community.bannerImage = `https://placehold.co/1200x400.png?text=${encodeURIComponent(updatedData.name.substring(0,3))}`;
+
+    // Handle explicit image updates
+    if (updatedData.image) {
+      community.image = updatedData.image;
+      if (updatedData.imageHint) {
+        community.imageHint = updatedData.imageHint;
+      } else if (updatedData.image.startsWith('data:image')) {
+        community.imageHint = "AI generated icon";
+      }
+    } else if (nameChanged) {
+      community.image = `https://placehold.co/400x250.png?text=${encodeURIComponent(community.name.substring(0,3))}`;
+      community.imageHint = "community topic";
     }
 
+    // Handle explicit banner image updates
+    if (updatedData.bannerImage) {
+      community.bannerImage = updatedData.bannerImage;
+      if (updatedData.bannerImageHint) {
+        community.bannerImageHint = updatedData.bannerImageHint;
+      } else if (updatedData.bannerImage.startsWith('data:image')) {
+        community.bannerImageHint = "AI generated banner";
+      }
+    } else if (nameChanged) {
+      community.bannerImage = `https://placehold.co/1200x400.png?text=${encodeURIComponent(community.name.substring(0,3))}`;
+      community.bannerImageHint = "community banner";
+    }
+    
     initialCommunities[communityIndex] = community;
     return community;
   }
