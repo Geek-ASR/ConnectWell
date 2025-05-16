@@ -9,14 +9,16 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Users, Edit3, MessageSquarePlus, Settings } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import type { Community } from '../page'; // Import the Community type
-import { getCommunityById } from '../page'; // Import the data fetching function
+import type { Community, PostInCommunity } from '../page'; // Import the Community and PostInCommunity types
+import { getCommunityById, addPostToCommunity } from '../page'; // Import data fetching and mutation functions
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext'; // Import useAuth
 
 export default function CommunityDetailPage() {
   const params = useParams();
   const router = useRouter();
   const { toast } = useToast();
+  const { user } = useAuth(); // Get current user
   const [community, setCommunity] = useState<Community | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -29,12 +31,65 @@ export default function CommunityDetailPage() {
         setCommunity(foundCommunity);
       } else {
         console.error("Community not found");
-        // Optionally redirect or show a more permanent "not found" state
-        // router.push('/communities?error=notfound'); // Example
       }
     }
     setLoading(false);
   }, [communityId, router]);
+
+  const getInitials = (name: string | null | undefined) => {
+    if (!name) return "U";
+    const names = name.split(' ');
+    if (names.length > 1) {
+      return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
+    }
+    return name.substring(0, 2).toUpperCase();
+  };
+  
+  // Placeholder data for members - posts will come from community.posts
+  const communityMembers = [
+    { id: 'm1', name: 'Eva Green', avatar: 'https://placehold.co/40x40.png?text=EG', avatarHint: 'profile photo' },
+    { id: 'm2', name: 'David Lee', avatar: 'https://placehold.co/40x40.png?text=DL', avatarHint: 'user icon' },
+    { id: 'm3', name: 'Olivia Chen', avatar: 'https://placehold.co/40x40.png?text=OC', avatarHint: 'member avatar' },
+    { id: 'm4', name: 'Michael B.', avatar: 'https://placehold.co/40x40.png?text=MB', avatarHint: 'man smiling' },
+  ];
+
+  const handleEditCommunity = () => {
+    toast({ title: "Edit Community", description: "This would open an edit form for the community. (Not implemented)" });
+  };
+
+  const handleNewPost = () => {
+    if (!community || !communityId || !user) {
+      toast({ title: "Error", description: "Cannot create post. Community or user data missing.", variant: "destructive" });
+      return;
+    }
+
+    const postAdded = addPostToCommunity(communityId, {
+      userId: user.uid,
+      userName: user.displayName || 'Anonymous User',
+      userAvatar: user.photoURL || `https://placehold.co/40x40.png?text=${getInitials(user.displayName)}`,
+      userAvatarHint: 'user avatar',
+      title: `A new discussion by ${user.displayName || 'a member'}`,
+      content: 'This is a newly added post to this community! Share your thoughts and experiences.'
+    });
+
+    if (postAdded) {
+      const updatedCommunityData = getCommunityById(communityId);
+      if (updatedCommunityData) {
+        setCommunity(updatedCommunityData);
+      }
+      toast({ title: "Post Created", description: "Your post has been added to the community." });
+    } else {
+      toast({ title: "Error", description: "Could not add post to the community.", variant: "destructive" });
+    }
+  };
+
+  const handleViewAllMembers = () => {
+    toast({ title: "View All Members", description: `Displaying all ${community?.members || 0} members. (Not implemented)` });
+  };
+
+  const handleCommunitySettings = () => {
+    toast({ title: "Community Settings", description: "Opening community settings. (Not implemented)" });
+  };
 
   if (loading) {
     return (
@@ -72,45 +127,6 @@ export default function CommunityDetailPage() {
     );
   }
 
-  const getInitials = (name: string) => {
-    const names = name.split(' ');
-    if (names.length > 1) {
-      return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
-    }
-    return name.substring(0, 2).toUpperCase();
-  };
-  
-  // Placeholder data for posts and members
-  const posts = [
-    { id: 'p1', user: { name: 'Alice Wonderland', avatar: 'https://placehold.co/40x40.png?text=AW', avatarHint: 'woman nature' }, title: 'First steps after diagnosis', content: 'Just got diagnosed and feeling overwhelmed. Any advice for newcomers?', comments: 5, upvotes: 12, time: '2h ago' },
-    { id: 'p2', user: { name: 'Bob The Builder', avatar: 'https://placehold.co/40x40.png?text=BB', avatarHint: 'man city' }, title: 'Managing daily routines', content: 'What are your best tips for staying on track with medication and diet?', comments: 8, upvotes: 25, time: '5h ago' },
-    { id: 'p3', user: { name: 'Charlie Brown', avatar: 'https://placehold.co/40x40.png?text=CB', avatarHint: 'person thinking' }, title: 'New research article discussion', content: 'Found an interesting article on new treatments, wanted to share and discuss thoughts. [Link]', comments: 12, upvotes: 30, time: '1d ago' },
-  ];
-
-  const communityMembers = [
-    { id: 'm1', name: 'Eva Green', avatar: 'https://placehold.co/40x40.png?text=EG', avatarHint: 'profile photo' },
-    { id: 'm2', name: 'David Lee', avatar: 'https://placehold.co/40x40.png?text=DL', avatarHint: 'user icon' },
-    { id: 'm3', name: 'Olivia Chen', avatar: 'https://placehold.co/40x40.png?text=OC', avatarHint: 'member avatar' },
-    { id: 'm4', name: 'Michael B.', avatar: 'https://placehold.co/40x40.png?text=MB', avatarHint: 'man smiling' },
-  ];
-
-  const handleEditCommunity = () => {
-    toast({ title: "Edit Community", description: "This would open an edit form for the community. (Not implemented)" });
-  };
-
-  const handleNewPost = () => {
-    toast({ title: "New Post", description: "This would open a new post creation modal/page. (Not implemented)" });
-  };
-
-  const handleViewAllMembers = () => {
-    toast({ title: "View All Members", description: `Displaying all ${community.members} members. (Not implemented)` });
-  };
-
-  const handleCommunitySettings = () => {
-    toast({ title: "Community Settings", description: "Opening community settings. (Not implemented)" });
-  };
-
-
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
       {/* Header and Back Button */}
@@ -142,7 +158,7 @@ export default function CommunityDetailPage() {
               fill
               style={{objectFit: 'cover'}}
               data-ai-hint={community.bannerImageHint || "community banner"}
-              priority // Consider adding priority if this is LCP
+              priority
             />
           )}
           <div className="absolute inset-0 bg-black/30" /> {/* Overlay for text contrast */}
@@ -174,33 +190,33 @@ export default function CommunityDetailPage() {
         {/* Posts Section (Left/Main) */}
         <div className="lg:col-span-2 space-y-4">
             <h2 className="text-2xl font-semibold text-foreground mb-4">Recent Posts</h2>
-            {posts.map(post => (
-                <Card key={post.id} className="shadow-md hover:shadow-lg transition-shadow">
-                    <CardHeader className="flex flex-row items-start gap-3 pb-3">
-                         <Avatar className="h-10 w-10">
-                            <AvatarImage src={post.user.avatar} alt={post.user.name} data-ai-hint={post.user.avatarHint} />
-                            <AvatarFallback>{getInitials(post.user.name)}</AvatarFallback>
-                        </Avatar>
-                        <div className="flex-grow">
-                            <p className="font-semibold text-sm text-foreground">{post.user.name}</p>
-                            <p className="text-xs text-muted-foreground">{post.time}</p>
-                        </div>
-                    </CardHeader>
-                    <CardContent>
-                        <h3 className="text-lg font-semibold mb-1 text-foreground">{post.title}</h3>
-                        <p className="text-sm text-foreground/90">{post.content}</p>
-                    </CardContent>
-                    <CardFooter className="text-xs text-muted-foreground flex justify-between items-center pt-3 border-t">
-                        <div className="flex gap-4">
-                            <span>{post.upvotes} Upvotes</span>
-                            <span>{post.comments} Comments</span>
-                        </div>
-                        {/* Placeholder for post actions like reply, etc. */}
-                         <Button variant="ghost" size="sm" className="text-xs h-auto p-1">View Post</Button>
-                    </CardFooter>
-                </Card>
-            ))}
-            {posts.length === 0 && (
+            {(community.posts && community.posts.length > 0) ? (
+                community.posts.map(post => (
+                    <Card key={post.id} className="shadow-md hover:shadow-lg transition-shadow">
+                        <CardHeader className="flex flex-row items-start gap-3 pb-3">
+                            <Avatar className="h-10 w-10">
+                                <AvatarImage src={post.userAvatar} alt={post.userName} data-ai-hint={post.userAvatarHint} />
+                                <AvatarFallback>{getInitials(post.userName)}</AvatarFallback>
+                            </Avatar>
+                            <div className="flex-grow">
+                                <p className="font-semibold text-sm text-foreground">{post.userName}</p>
+                                <p className="text-xs text-muted-foreground">{post.time}</p>
+                            </div>
+                        </CardHeader>
+                        <CardContent>
+                            <h3 className="text-lg font-semibold mb-1 text-foreground">{post.title}</h3>
+                            <p className="text-sm text-foreground/90">{post.content}</p>
+                        </CardContent>
+                        <CardFooter className="text-xs text-muted-foreground flex justify-between items-center pt-3 border-t">
+                            <div className="flex gap-4">
+                                <span>{post.upvotes} Upvotes</span>
+                                <span>{post.comments} Comments</span>
+                            </div>
+                            <Button variant="ghost" size="sm" className="text-xs h-auto p-1">View Post</Button>
+                        </CardFooter>
+                    </Card>
+                ))
+            ) : (
                 <Card className="shadow-md">
                     <CardContent className="pt-6">
                         <p className="text-muted-foreground text-center">No posts in this community yet. Be the first to share!</p>
