@@ -6,16 +6,17 @@ import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Users, Edit3, MessageSquarePlus, Settings } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Separator } from '@/components/ui/separator';
 import type { Community } from '../page'; // Import the Community type
 import { getCommunityById } from '../page'; // Import the data fetching function
+import { useToast } from '@/hooks/use-toast';
 
 export default function CommunityDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const { toast } = useToast();
   const [community, setCommunity] = useState<Community | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -27,9 +28,7 @@ export default function CommunityDetailPage() {
       if (foundCommunity) {
         setCommunity(foundCommunity);
       } else {
-        // Handle community not found, e.g., redirect or show error
         console.error("Community not found");
-        // router.push('/communities'); // Option: redirect
       }
     }
     setLoading(false);
@@ -38,7 +37,11 @@ export default function CommunityDetailPage() {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
-        <div className="text-xl">Loading community details...</div>
+        <Card className="shadow-lg">
+            <CardContent className="pt-6">
+                <p className="text-xl text-muted-foreground">Loading community details...</p>
+            </CardContent>
+        </Card>
       </div>
     );
   }
@@ -75,7 +78,6 @@ export default function CommunityDetailPage() {
     return name.substring(0, 2).toUpperCase();
   };
   
-  // Placeholder data for posts and members
   const posts = [
     { id: 'p1', user: { name: 'Alice Wonderland', avatar: 'https://placehold.co/40x40.png?text=AW', avatarHint: 'woman nature' }, title: 'First steps after diagnosis', content: 'Just got diagnosed and feeling overwhelmed. Any advice for newcomers?', comments: 5, upvotes: 12, time: '2h ago' },
     { id: 'p2', user: { name: 'Bob The Builder', avatar: 'https://placehold.co/40x40.png?text=BB', avatarHint: 'man city' }, title: 'Managing daily routines', content: 'What are your best tips for staying on track with medication and diet?', comments: 8, upvotes: 25, time: '5h ago' },
@@ -89,6 +91,22 @@ export default function CommunityDetailPage() {
     { id: 'm4', name: 'Michael B.', avatar: 'https://placehold.co/40x40.png?text=MB', avatarHint: 'man smiling' },
   ];
 
+  const handleEditCommunity = () => {
+    toast({ title: "Edit Community", description: "This would open an edit form for the community. (Not implemented)" });
+  };
+
+  const handleNewPost = () => {
+    toast({ title: "New Post", description: "This would open a new post creation modal/page. (Not implemented)" });
+  };
+
+  const handleViewAllMembers = () => {
+    toast({ title: "View All Members", description: `Displaying all ${community.members} members. (Not implemented)` });
+  };
+
+  const handleCommunitySettings = () => {
+    toast({ title: "Community Settings", description: "Opening community settings. (Not implemented)" });
+  };
+
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
@@ -100,12 +118,12 @@ export default function CommunityDetailPage() {
             <span className="sr-only">Back to Communities</span>
           </Link>
         </Button>
-        {/* Community Actions (Placeholder) */}
+        {/* Community Actions */}
         <div className="flex items-center gap-2">
-            <Button variant="outline">
+            <Button variant="outline" onClick={handleEditCommunity}>
                 <Edit3 className="mr-2 h-4 w-4" /> Edit Community
             </Button>
-             <Button>
+             <Button onClick={handleNewPost}>
                 <MessageSquarePlus className="mr-2 h-4 w-4" /> New Post
             </Button>
         </div>
@@ -118,8 +136,8 @@ export default function CommunityDetailPage() {
             <Image
               src={community.bannerImage}
               alt={`${community.name} banner`}
-              layout="fill"
-              objectFit="cover"
+              fill // Changed from layout="fill"
+              style={{objectFit: 'cover'}} // Changed from objectFit="cover"
               data-ai-hint={community.bannerImageHint || "community banner"}
             />
           )}
@@ -194,7 +212,7 @@ export default function CommunityDetailPage() {
                         </div>
                     ))}
                     {community.members > 5 && (
-                        <Button variant="link" className="p-0 h-auto text-sm w-full justify-start">
+                        <Button variant="link" className="p-0 h-auto text-sm w-full justify-start" onClick={handleViewAllMembers}>
                             View all {community.members} members
                         </Button>
                     )}
@@ -208,7 +226,7 @@ export default function CommunityDetailPage() {
                 <CardContent className="text-sm space-y-2">
                     <p><strong>Founded:</strong> January 2024 (Placeholder)</p>
                     <p><strong>Rules:</strong> Be respectful, share constructively, no medical advice (consult professionals). (Placeholder)</p>
-                    <Button variant="outline" size="sm" className="w-full mt-2">
+                    <Button variant="outline" size="sm" className="w-full mt-2" onClick={handleCommunitySettings}>
                         <Settings className="mr-2 h-4 w-4" /> Community Settings
                     </Button>
                 </CardContent>
@@ -219,3 +237,4 @@ export default function CommunityDetailPage() {
   );
 }
 
+    
