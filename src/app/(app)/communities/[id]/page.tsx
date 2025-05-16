@@ -29,6 +29,8 @@ export default function CommunityDetailPage() {
         setCommunity(foundCommunity);
       } else {
         console.error("Community not found");
+        // Optionally redirect or show a more permanent "not found" state
+        // router.push('/communities?error=notfound'); // Example
       }
     }
     setLoading(false);
@@ -78,6 +80,7 @@ export default function CommunityDetailPage() {
     return name.substring(0, 2).toUpperCase();
   };
   
+  // Placeholder data for posts and members
   const posts = [
     { id: 'p1', user: { name: 'Alice Wonderland', avatar: 'https://placehold.co/40x40.png?text=AW', avatarHint: 'woman nature' }, title: 'First steps after diagnosis', content: 'Just got diagnosed and feeling overwhelmed. Any advice for newcomers?', comments: 5, upvotes: 12, time: '2h ago' },
     { id: 'p2', user: { name: 'Bob The Builder', avatar: 'https://placehold.co/40x40.png?text=BB', avatarHint: 'man city' }, title: 'Managing daily routines', content: 'What are your best tips for staying on track with medication and diet?', comments: 8, upvotes: 25, time: '5h ago' },
@@ -136,9 +139,10 @@ export default function CommunityDetailPage() {
             <Image
               src={community.bannerImage}
               alt={`${community.name} banner`}
-              fill // Changed from layout="fill"
-              style={{objectFit: 'cover'}} // Changed from objectFit="cover"
+              fill
+              style={{objectFit: 'cover'}}
               data-ai-hint={community.bannerImageHint || "community banner"}
+              priority // Consider adding priority if this is LCP
             />
           )}
           <div className="absolute inset-0 bg-black/30" /> {/* Overlay for text contrast */}
@@ -169,64 +173,83 @@ export default function CommunityDetailPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Posts Section (Left/Main) */}
         <div className="lg:col-span-2 space-y-4">
-            <h2 className="text-2xl font-semibold">Recent Posts</h2>
+            <h2 className="text-2xl font-semibold text-foreground mb-4">Recent Posts</h2>
             {posts.map(post => (
-                <Card key={post.id} className="shadow-md">
-                    <CardHeader className="flex flex-row items-center gap-3 pb-3">
+                <Card key={post.id} className="shadow-md hover:shadow-lg transition-shadow">
+                    <CardHeader className="flex flex-row items-start gap-3 pb-3">
                          <Avatar className="h-10 w-10">
                             <AvatarImage src={post.user.avatar} alt={post.user.name} data-ai-hint={post.user.avatarHint} />
                             <AvatarFallback>{getInitials(post.user.name)}</AvatarFallback>
                         </Avatar>
-                        <div>
-                            <p className="font-semibold text-sm">{post.user.name}</p>
+                        <div className="flex-grow">
+                            <p className="font-semibold text-sm text-foreground">{post.user.name}</p>
                             <p className="text-xs text-muted-foreground">{post.time}</p>
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <h3 className="text-lg font-medium mb-1">{post.title}</h3>
+                        <h3 className="text-lg font-semibold mb-1 text-foreground">{post.title}</h3>
                         <p className="text-sm text-foreground/90">{post.content}</p>
                     </CardContent>
-                    <CardFooter className="text-xs text-muted-foreground flex justify-between pt-3 border-t">
-                        <span>{post.upvotes} Upvotes</span>
-                        <span>{post.comments} Comments</span>
+                    <CardFooter className="text-xs text-muted-foreground flex justify-between items-center pt-3 border-t">
+                        <div className="flex gap-4">
+                            <span>{post.upvotes} Upvotes</span>
+                            <span>{post.comments} Comments</span>
+                        </div>
+                        {/* Placeholder for post actions like reply, etc. */}
+                         <Button variant="ghost" size="sm" className="text-xs h-auto p-1">View Post</Button>
                     </CardFooter>
                 </Card>
             ))}
-            {posts.length === 0 && <p className="text-muted-foreground">No posts in this community yet. Be the first to share!</p>}
+            {posts.length === 0 && (
+                <Card className="shadow-md">
+                    <CardContent className="pt-6">
+                        <p className="text-muted-foreground text-center">No posts in this community yet. Be the first to share!</p>
+                    </CardContent>
+                </Card>
+            )}
         </div>
 
         {/* Members & About Section (Right Sidebar) */}
-        <div className="lg:col-span-1 space-y-4">
+        <div className="lg:col-span-1 space-y-6">
             <Card className="shadow-md">
                 <CardHeader>
-                    <CardTitle className="text-lg">Community Members</CardTitle>
+                    <CardTitle className="text-xl font-semibold text-foreground">Community Members</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                     {communityMembers.slice(0, 5).map(member => ( // Show a few members
-                        <div key={member.id} className="flex items-center gap-3">
-                            <Avatar className="h-8 w-8">
+                        <div key={member.id} className="flex items-center gap-3 hover:bg-accent/50 p-2 rounded-md transition-colors">
+                            <Avatar className="h-9 w-9">
                                 <AvatarImage src={member.avatar} alt={member.name} data-ai-hint={member.avatarHint} />
                                 <AvatarFallback>{getInitials(member.name)}</AvatarFallback>
                             </Avatar>
-                            <span className="text-sm font-medium">{member.name}</span>
+                            <span className="text-sm font-medium text-foreground">{member.name}</span>
                         </div>
                     ))}
                     {community.members > 5 && (
-                        <Button variant="link" className="p-0 h-auto text-sm w-full justify-start" onClick={handleViewAllMembers}>
+                        <Button variant="link" className="p-0 h-auto text-sm w-full justify-start mt-2 text-primary hover:text-primary/80" onClick={handleViewAllMembers}>
                             View all {community.members} members
                         </Button>
                     )}
+                     {community.members === 0 && (
+                         <p className="text-sm text-muted-foreground">No members yet.</p>
+                     )}
                 </CardContent>
             </Card>
 
              <Card className="shadow-md">
                 <CardHeader>
-                    <CardTitle className="text-lg">About this Community</CardTitle>
+                    <CardTitle className="text-xl font-semibold text-foreground">About this Community</CardTitle>
                 </CardHeader>
-                <CardContent className="text-sm space-y-2">
-                    <p><strong>Founded:</strong> January 2024 (Placeholder)</p>
-                    <p><strong>Rules:</strong> Be respectful, share constructively, no medical advice (consult professionals). (Placeholder)</p>
-                    <Button variant="outline" size="sm" className="w-full mt-2" onClick={handleCommunitySettings}>
+                <CardContent className="text-sm space-y-3">
+                    <div className="flex items-center">
+                        <strong className="w-20 text-muted-foreground">Founded:</strong>
+                        <span className="text-foreground">January 2024 <span className="text-xs text-muted-foreground">(Placeholder)</span></span>
+                    </div>
+                     <div className="flex items-start">
+                        <strong className="w-20 text-muted-foreground shrink-0">Rules:</strong>
+                        <span className="text-foreground">Be respectful, share constructively, no medical advice (consult professionals). <span className="text-xs text-muted-foreground">(Placeholder)</span></span>
+                    </div>
+                    <Button variant="outline" size="sm" className="w-full mt-4" onClick={handleCommunitySettings}>
                         <Settings className="mr-2 h-4 w-4" /> Community Settings
                     </Button>
                 </CardContent>
@@ -236,5 +259,3 @@ export default function CommunityDetailPage() {
     </div>
   );
 }
-
-    
