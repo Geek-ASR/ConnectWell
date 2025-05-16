@@ -41,6 +41,8 @@ import {
   Loader2,
   Bookmark, // For Save icon
   Flag, // For Report icon
+  UserPlus, // For Follow icon
+  UserCheck, // For Following icon
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -74,6 +76,7 @@ interface FeedItem {
   isUpvotedByUser?: boolean;
   isReported?: boolean;
   isSaved?: boolean;
+  isUserFollowed?: boolean; // Added for follow functionality
 }
 
 interface AdItem {
@@ -106,6 +109,7 @@ const initialFeedItems: FeedItem[] = [
     isUpvotedByUser: false,
     isReported: false,
     isSaved: false,
+    isUserFollowed: false,
   },
   {
     id: "2",
@@ -124,6 +128,7 @@ const initialFeedItems: FeedItem[] = [
     isUpvotedByUser: true,
     isReported: false,
     isSaved: true,
+    isUserFollowed: true,
   },
   {
     id: "3",
@@ -145,6 +150,7 @@ const initialFeedItems: FeedItem[] = [
     isUpvotedByUser: false,
     isReported: false,
     isSaved: false,
+    isUserFollowed: false,
   },
 ];
 
@@ -226,6 +232,7 @@ export default function DashboardPage() {
           isUpvotedByUser: false,
           isReported: false,
           isSaved: false,
+          isUserFollowed: false,
         };
 
         setDisplayedFeedItems(prevItems => [newPost, ...prevItems]);
@@ -313,6 +320,21 @@ export default function DashboardPage() {
             description: newSavedState ? "Post saved!" : "Post unsaved.",
           });
           return { ...item, isSaved: newSavedState };
+        }
+        return item;
+      })
+    );
+  };
+
+  const handleToggleFollowUser = (feedItemId: string) => {
+    setDisplayedFeedItems(prevItems =>
+      prevItems.map(item => {
+        if (item.id === feedItemId) {
+          const newFollowedState = !item.isUserFollowed;
+          toast({
+            description: newFollowedState ? `You are now following ${item.user.name}.` : `You unfollowed ${item.user.name}.`,
+          });
+          return { ...item, isUserFollowed: newFollowedState };
         }
         return item;
       })
@@ -422,9 +444,26 @@ export default function DashboardPage() {
                     <AvatarFallback>{getInitials(item.user.name)}</AvatarFallback>
                   </Avatar>
                   <div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1">
                         <Link href="#" className="font-semibold text-sm hover:underline">{item.user.name}</Link>
-                        <Button variant="link" size="sm" className="text-primary p-0 h-auto text-xs">Follow</Button>
+                        <span className="text-sm text-muted-foreground">&bull;</span>
+                        <Button 
+                          variant={item.isUserFollowed ? "outline" : "link"} 
+                          size="sm" 
+                          className={cn(
+                            "p-0 h-auto text-xs", 
+                            item.isUserFollowed ? "px-2 py-1 border-primary text-primary" : "text-primary hover:text-primary/80"
+                          )}
+                          onClick={() => handleToggleFollowUser(item.id)}
+                          disabled={item.isReported}
+                        >
+                          {item.isUserFollowed ? (
+                            <UserCheck className="mr-1 h-3 w-3" /> 
+                          ) : (
+                            <UserPlus className="mr-1 h-3 w-3" />
+                          )}
+                          {item.isUserFollowed ? "Following" : "Follow"}
+                        </Button>
                     </div>
                     <p className="text-xs text-muted-foreground">
                       {item.user.role} &bull; Updated {item.updatedTime}
@@ -432,7 +471,7 @@ export default function DashboardPage() {
                   </div>
                 </div>
                 {!item.isReported && (
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => handleHidePost(item.id)}>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => handleHidePost(item.id)} disabled={item.isReported}>
                     <X className="h-4 w-4" />
                   </Button>
                 )}
@@ -493,7 +532,7 @@ export default function DashboardPage() {
               {!item.isReported && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:bg-accent/50 hover:text-primary">
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:bg-accent/50 hover:text-primary" disabled={item.isReported}>
                       <MoreHorizontal className="h-5 w-5" />
                     </Button>
                   </DropdownMenuTrigger>
@@ -541,3 +580,4 @@ export default function DashboardPage() {
   );
 }
 
+    
