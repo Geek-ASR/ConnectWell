@@ -5,7 +5,6 @@ import { revalidatePath } from 'next/cache';
 import { 
   addCommunity as addCommunityService, 
   updateCommunityDetails as updateCommunityDetailsService, 
-  addPostToCommunity as addPostToCommunityService,
   type Community,
   type PostInCommunity 
 } from '@/lib/community-service';
@@ -81,7 +80,7 @@ export async function createCommunityAction(
     });
 
     if (newCommunity) {
-      let iconGenerationMessage = 'Using placeholder icon.';
+      let iconGenerationMessage = 'Using placeholder icon.'; // Default message
       try {
         const imagePrompt = `A unique, modern, abstract icon for an online community named '${newCommunity.name}', focusing on themes of connection and support. Suitable for a small avatar.`;
         const generatedImageOutput = await generateImage({ prompt: imagePrompt });
@@ -114,6 +113,7 @@ export async function createCommunityAction(
         community: newCommunity 
       };
     } else {
+      // This case is unlikely to be hit with the current addCommunityService implementation
       return { success: false, message: 'Failed to create community. Please try again.' };
     }
   } catch (error) {
@@ -226,3 +226,4 @@ export async function createPostInCommunityAction(
     return { success: false, message: 'An unexpected error occurred while creating the post.' };
   }
 }
+
