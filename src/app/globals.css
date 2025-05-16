@@ -2,9 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
-}
+/* Removed direct font-family declaration for body, 
+   as it's now handled by Tailwind's font-sans utility 
+   and the font variables on the html tag. */
 
 @layer base {
   :root {
@@ -93,5 +93,6 @@ body {
   }
   body {
     @apply bg-background text-foreground;
+    /* font-family will be applied by .font-sans utility class on body tag */
   }
 }
