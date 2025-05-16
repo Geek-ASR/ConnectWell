@@ -13,17 +13,14 @@ import {
   ArrowBigUp,
   Briefcase,
   ChevronDown,
-  Edit3,
   FilePlus2,
   Globe,
-  HelpCircle,
   Image as ImageIcon,
   Lightbulb,
   Link as LinkIcon,
   List,
   MessageCircle,
   MoreHorizontal,
-  PenSquare,
   PlusCircle,
   Repeat,
   Search,
@@ -37,7 +34,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import React from "react";
+import React, { useState } from "react";
 
 interface SpaceItem {
   name: string;
@@ -74,6 +71,8 @@ interface AdItem {
 
 export default function DashboardPage() {
   const { user } = useAuth();
+  const [postText, setPostText] = useState("");
+  const [activePostType, setActivePostType] = useState("share"); // 'share' or 'ask'
 
   const spaces: SpaceItem[] = [
     { name: "Medical Research Today", icon: Briefcase, href: "#" },
@@ -166,6 +165,19 @@ export default function DashboardPage() {
     return name.substring(0, 2).toUpperCase();
   };
 
+  const handlePostSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!postText.trim()) return;
+    console.log({
+      type: activePostType,
+      content: postText,
+      user: user?.displayName,
+    });
+    // In a real app, you'd send this to a backend or state management
+    setPostText(""); // Clear textarea after submission
+    // Potentially add to feedItems state if managing locally, or refetch
+  };
+
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-x-6 xl:gap-x-8 min-h-screen">
@@ -206,35 +218,55 @@ export default function DashboardPage() {
       {/* Main Content Feed */}
       <main className="lg:col-span-9 xl:col-span-7 py-6 space-y-6">
         <Card className="shadow-md">
-          <CardHeader className="pb-4">
+          <CardHeader className="pb-2">
             <div className="flex items-center gap-3">
               <Avatar>
                 <AvatarImage src={user?.photoURL ?? undefined} alt={user?.displayName ?? "User"} data-ai-hint="user avatar small"/>
                 <AvatarFallback>{getInitials(user?.displayName)}</AvatarFallback>
               </Avatar>
-              <Textarea
-                placeholder="What do you want to ask or share?"
-                className="flex-1 resize-none border-0 focus-visible:ring-0 shadow-none p-0 text-base"
-                rows={1}
-                onClick={(e) => (e.currentTarget.rows = 3)} // Expand on click
-                onBlur={(e) => (e.currentTarget.rows = 1)} // Shrink on blur if empty
-              />
+              <p className="font-medium text-foreground">Create Post</p>
             </div>
           </CardHeader>
-          <CardFooter className="flex justify-between items-center pt-2 border-t">
-            <div className="flex gap-2">
-                <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary">
-                    <HelpCircle className="mr-2 h-4 w-4"/> Ask
-                </Button>
-                <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary">
-                    <Edit3 className="mr-2 h-4 w-4"/> Answer
-                </Button>
-                <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary">
-                    <PenSquare className="mr-2 h-4 w-4"/> Post
-                </Button>
-            </div>
-            {/* Add other controls like attach image, link etc. if needed */}
-          </CardFooter>
+          <CardContent className="pt-2">
+            <Tabs defaultValue="share" className="w-full" onValueChange={setActivePostType}>
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="share">Share Update</TabsTrigger>
+                <TabsTrigger value="ask">Ask Question</TabsTrigger>
+              </TabsList>
+              <form onSubmit={handlePostSubmit}>
+                <TabsContent value="share" className="mt-4">
+                  <Textarea
+                    placeholder="What's on your mind? Share an update..."
+                    value={postText}
+                    onChange={(e) => setPostText(e.target.value)}
+                    rows={4}
+                    className="w-full text-sm"
+                  />
+                </TabsContent>
+                <TabsContent value="ask" className="mt-4">
+                  <Textarea
+                    placeholder="What question do you have for the community? Be specific."
+                    value={postText}
+                    onChange={(e) => setPostText(e.target.value)}
+                    rows={4}
+                    className="w-full text-sm"
+                  />
+                </TabsContent>
+                <div className="flex justify-end items-center mt-4 gap-2">
+                  {/* Placeholder for future icons like add image/link */}
+                  {/* 
+                  <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary">
+                    <ImageIcon className="h-5 w-5" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary">
+                    <LinkIcon className="h-5 w-5" />
+                  </Button>
+                   */}
+                  <Button type="submit" disabled={!postText.trim()}>Post</Button>
+                </div>
+              </form>
+            </Tabs>
+          </CardContent>
         </Card>
 
         {feedItems.map((item) => (
@@ -323,3 +355,4 @@ export default function DashboardPage() {
     </div>
   );
 }
+
