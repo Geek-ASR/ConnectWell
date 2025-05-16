@@ -199,20 +199,32 @@ export default function DashboardPage() {
           description: moderationResult.reason || "This content violates community guidelines.",
         });
       } else {
-        // Simulate successful post
-        console.log({
-          type: activePostType,
+        const newPost: FeedItem = {
+          id: Date.now().toString(),
+          user: {
+            name: user?.displayName || "Anonymous User",
+            avatarUrl: user?.photoURL || `https://placehold.co/40x40.png?text=${getInitials(user?.displayName)}`,
+            avatarHint: "user avatar",
+            role: "Community Member", 
+          },
+          updatedTime: "Just now",
           content: postText,
-          user: user?.displayName,
-        });
+          question: activePostType === "ask" ? postText : undefined,
+          upvotes: 0,
+          comments: 0,
+          shares: 0,
+          isUpvotedByUser: false,
+        };
+
+        setDisplayedFeedItems(prevItems => [newPost, ...prevItems]);
+        setPostText("");
         toast({
           title: "Post Created!",
           description: activePostType === "share" ? "Your update has been shared." : "Your question has been posted.",
         });
-        setPostText("");
       }
     } catch (error) {
-      console.error("Error during content moderation:", error);
+      console.error("Error during content moderation or post submission:", error);
       toast({
         variant: "destructive",
         title: "Error",
@@ -481,5 +493,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-
