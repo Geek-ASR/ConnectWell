@@ -16,6 +16,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"; // Added Sheet imports
 import {
   ArrowBigUp,
   Briefcase,
@@ -39,10 +40,11 @@ import {
   Users,
   X,
   Loader2,
-  Bookmark, // For Save icon
-  Flag, // For Report icon
-  UserPlus, // For Follow icon
-  UserCheck, // For Following icon
+  Bookmark, 
+  Flag, 
+  UserPlus, 
+  UserCheck, 
+  LayoutGrid, // Added for mobile sidebar trigger
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -76,7 +78,7 @@ interface FeedItem {
   isUpvotedByUser?: boolean;
   isReported?: boolean;
   isSaved?: boolean;
-  isUserFollowed?: boolean; // Added for follow functionality
+  isUserFollowed?: boolean; 
 }
 
 interface AdItem {
@@ -92,7 +94,7 @@ const initialFeedItems: FeedItem[] = [
   {
     id: "1",
     user: {
-      name: "Dr. Emily Carter",
+      name: "Dr. Emily Carter, a renowned cardiologist leading research in hypertension",
       avatarUrl: "https://placehold.co/40x40.png?text=EC",
       avatarHint: "doctor portrait",
       role: "Cardiologist, Lead Researcher",
@@ -114,7 +116,7 @@ const initialFeedItems: FeedItem[] = [
   {
     id: "2",
     user: {
-      name: "John Smith",
+      name: "John Smith, patient advocate and diabetes educator working with communities",
       avatarUrl: "https://placehold.co/40x40.png?text=JS",
       avatarHint: "patient advocate",
       role: "Patient Advocate, Diabetes Educator",
@@ -133,7 +135,7 @@ const initialFeedItems: FeedItem[] = [
   {
     id: "3",
     user: {
-      name: "Wellness Hub",
+      name: "Wellness Hub Community Space for Health Discussions",
       avatarUrl: "https://placehold.co/40x40.png?text=WH",
       avatarHint: "wellness logo",
       role: "Community Space",
@@ -154,6 +156,77 @@ const initialFeedItems: FeedItem[] = [
   },
 ];
 
+const spaces: SpaceItem[] = [
+  { name: "Medical Research Today & Tomorrow: Innovations and Discoveries", icon: Briefcase, href: "#" },
+  { name: "Global Health Initiatives & Policy Making Discussions", icon: Globe, href: "#" },
+  { name: "Chronic Illness Support Network and Personal Stories", icon: Users, href: "#" },
+  { name: "Mental Wellness Journeys: Coping, Healing, and Growth", icon: Lightbulb, href: "#" },
+  { name: "Fitness & Recovery: Strategies for a Healthier Lifestyle", icon: TrendingUp, href: "#" },
+  { name: "Pediatric Health and Child Development Insights", icon: Star, href: "#" },
+];
+
+const ads: AdItem[] = [
+  {
+    id: "ad1",
+    title: "Advanced Health Monitoring Wearable - Track Vitals 24/7",
+    imageUrl: "https://placehold.co/300x200.png",
+    imageHint: "health wearable",
+    linkUrl: "#",
+    advertiser: "TechCare Inc.",
+  },
+  {
+    id: "ad2",
+    title: "Join Our Online Yoga & Meditation Classes for Mind-Body Balance",
+    imageUrl: "https://placehold.co/300x200.png",
+    imageHint: "yoga meditation",
+    linkUrl: "#",
+    advertiser: "SereneMind Studio",
+  },
+];
+
+// Component for the content of the dashboard's left sidebar
+const DashboardSpacesSidebarContent = () => {
+  return (
+    <div className="flex flex-col h-full">
+      <div className="p-4 space-y-2 flex-grow"> {/* Reduced space-y from 6 to 2 for denser packing, added p-4 */}
+        <Card className="shadow-none border-none bg-transparent">
+          <CardContent className="p-0 space-y-1"> {/* Reduced space-y */}
+            <Button variant="outline" className="w-full justify-start h-auto py-2 px-2 text-sm">
+              <PlusCircle className="mr-2 h-4 w-4 flex-shrink-0" /> {/* Adjusted icon size */}
+              <span className="min-w-0">Create Space</span>
+            </Button>
+            {spaces.map((space) => (
+              <Button
+                key={space.name}
+                variant="ghost"
+                className="w-full justify-start text-muted-foreground hover:text-foreground border border-transparent h-auto py-2 px-2 text-sm"
+                asChild
+              >
+                <Link href={space.href} className="flex items-center text-left w-full">
+                  <space.icon className="mr-2 h-4 w-4 flex-shrink-0" /> {/* Adjusted icon size */}
+                  <span className="min-w-0">{space.name}</span>
+                </Link>
+              </Button>
+            ))}
+          </CardContent>
+        </Card>
+      </div>
+      <div className="p-4 mt-auto border-t border-border"> {/* Footer links area, mt-auto to push to bottom */}
+        <Separator className="my-2 lg:my-0 lg:hidden" /> {/* Separator for mobile/tablet sheet */}
+        <div className="space-y-1 text-xs text-muted-foreground">
+          <Link href="#" className="hover:underline block">About</Link>
+          <Link href="#" className="hover:underline block">Careers</Link>
+          <Link href="#" className="hover:underline block">Terms</Link>
+          <Link href="#" className="hover:underline block">Privacy</Link>
+          <Link href="#" className="hover:underline block">Acceptable Use</Link>
+          <Link href="#" className="hover:underline block">Your Ad Choices</Link>
+          <Link href="#" className="hover:underline block">Grievance Officer</Link>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -162,34 +235,7 @@ export default function DashboardPage() {
   const [activePostType, setActivePostType] = useState("share");
   const [displayedFeedItems, setDisplayedFeedItems] = useState<FeedItem[]>(initialFeedItems);
   const [isSubmittingPost, setIsSubmittingPost] = useState(false);
-
-  const spaces: SpaceItem[] = [
-    { name: "Medical Research Today", icon: Briefcase, href: "#" },
-    { name: "Global Health Initiatives", icon: Globe, href: "#" },
-    { name: "Chronic Illness Support", icon: Users, href: "#" },
-    { name: "Mental Wellness Journeys", icon: Lightbulb, href: "#" },
-    { name: "Fitness & Recovery", icon: TrendingUp, href: "#" },
-    { name: "Pediatric Health", icon: Star, href: "#" },
-  ];
-
-  const ads: AdItem[] = [
-    {
-      id: "ad1",
-      title: "Advanced Health Monitoring Wearable",
-      imageUrl: "https://placehold.co/300x200.png",
-      imageHint: "health wearable",
-      linkUrl: "#",
-      advertiser: "TechCare Inc.",
-    },
-    {
-      id: "ad2",
-      title: "Join Our Online Yoga & Meditation Classes",
-      imageUrl: "https://placehold.co/300x200.png",
-      imageHint: "yoga meditation",
-      linkUrl: "#",
-      advertiser: "SereneMind Studio",
-    },
-  ];
+  const [isMobileSpacesOpen, setIsMobileSpacesOpen] = useState(false); // State for mobile sidebar
 
   const getInitials = (name: string | null | undefined) => {
     if (!name) return "U";
@@ -343,241 +389,231 @@ export default function DashboardPage() {
 
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-x-6 xl:gap-x-8 min-h-screen">
-      {/* Left Sidebar */}
-      <aside className="hidden lg:block lg:col-span-3 xl:col-span-2 py-6 space-y-6 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto">
-        <Card className="shadow-none border-none bg-transparent">
-          <CardContent className="p-0 space-y-2">
-            <Button variant="outline" className="w-full justify-start">
-              <PlusCircle className="mr-2 h-5 w-5" /> Create Space
+    <div className="min-h-screen">
+      {/* Mobile/Tablet Sidebar Trigger */}
+      <div className="lg:hidden p-4 border-b">
+        <Sheet open={isMobileSpacesOpen} onOpenChange={setIsMobileSpacesOpen}>
+          <SheetTrigger asChild>
+            <Button variant="outline" className="w-full sm:w-auto">
+              <LayoutGrid className="mr-2 h-5 w-5" />
+              Spaces & Options
             </Button>
-            {spaces.map((space) => (
-              <Button
-                key={space.name}
-                variant="ghost"
-                className="w-full justify-start text-muted-foreground hover:text-foreground border border-transparent"
-                asChild
-              >
-                <Link href={space.href}>
-                  <space.icon className="mr-2 h-5 w-5" />
-                  {space.name}
-                </Link>
-              </Button>
-            ))}
-          </CardContent>
-        </Card>
-        <Separator />
-        <div className="space-y-1 px-2 text-xs text-muted-foreground">
-          <Link href="#" className="hover:underline block">About</Link>
-          <Link href="#" className="hover:underline block">Careers</Link>
-          <Link href="#" className="hover:underline block">Terms</Link>
-          <Link href="#" className="hover:underline block">Privacy</Link>
-          <Link href="#" className="hover:underline block">Acceptable Use</Link>
-          <Link href="#" className="hover:underline block">Your Ad Choices</Link>
-          <Link href="#" className="hover:underline block">Grievance Officer</Link>
-        </div>
-      </aside>
+          </SheetTrigger>
+          <SheetContent side="left" className="w-[300px] p-0 flex flex-col">
+            <DashboardSpacesSidebarContent />
+          </SheetContent>
+        </Sheet>
+      </div>
 
-      {/* Main Content Feed */}
-      <main className="lg:col-span-9 xl:col-span-7 py-6 space-y-6">
-        <Card className="shadow-md">
-          <CardHeader className="pb-2">
-            <div className="flex items-center gap-3">
-              <Avatar>
-                <AvatarImage src={user?.photoURL ?? undefined} alt={user?.displayName ?? "User"} data-ai-hint="user avatar small"/>
-                <AvatarFallback>{getInitials(user?.displayName)}</AvatarFallback>
-              </Avatar>
-              <p className="font-medium text-foreground">Create Post</p>
-            </div>
-          </CardHeader>
-          <CardContent className="pt-2">
-            <Tabs defaultValue="share" className="w-full" onValueChange={setActivePostType}>
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="share">Share Update</TabsTrigger>
-                <TabsTrigger value="ask">Ask Question</TabsTrigger>
-              </TabsList>
-              <form onSubmit={handlePostSubmit}>
-                <TabsContent value="share" className="mt-4">
-                  <Textarea
-                    placeholder="What's on your mind? Share an update..."
-                    value={postText}
-                    onChange={(e) => setPostText(e.target.value)}
-                    rows={4}
-                    className="w-full text-sm"
-                    disabled={isSubmittingPost}
-                  />
-                </TabsContent>
-                <TabsContent value="ask" className="mt-4">
-                  <Textarea
-                    placeholder="What question do you have for the community? Be specific."
-                    value={postText}
-                    onChange={(e) => setPostText(e.target.value)}
-                    rows={4}
-                    className="w-full text-sm"
-                    disabled={isSubmittingPost}
-                  />
-                </TabsContent>
-                <div className="flex justify-end items-center mt-4 gap-2">
-                  <Button type="submit" disabled={!postText.trim() || isSubmittingPost}>
-                    {isSubmittingPost ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Posting...
-                      </>
-                    ) : (
-                      "Post"
-                    )}
-                  </Button>
-                </div>
-              </form>
-            </Tabs>
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-x-6 xl:gap-x-8">
+        {/* Left Sidebar for Desktop */}
+        <aside className="hidden lg:block lg:col-span-3 xl:col-span-2 sticky top-16 h-[calc(100vh-4rem)]">
+           <div className="h-full overflow-y-auto"> {/* Removed py-6 to let content manage padding */}
+            <DashboardSpacesSidebarContent />
+          </div>
+        </aside>
 
-        {displayedFeedItems.map((item) => (
-          <Card key={item.id} className={cn("shadow-md", item.isReported && "opacity-60")}>
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-3">
-                  <Avatar className="h-10 w-10">
-                    <AvatarImage src={item.user.avatarUrl} alt={item.user.name} data-ai-hint={item.user.avatarHint} />
-                    <AvatarFallback>{getInitials(item.user.name)}</AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <div className="flex items-center gap-1">
-                        <Link href="#" className="font-semibold text-sm hover:underline">{item.user.name}</Link>
-                        <span className="text-sm text-muted-foreground">&bull;</span>
-                        <Button 
-                          variant={item.isUserFollowed ? "outline" : "link"} 
-                          size="sm" 
-                          className={cn(
-                            "p-0 h-auto text-xs", 
-                            item.isUserFollowed ? "px-2 py-1 border-primary text-primary" : "text-primary hover:text-primary/80"
-                          )}
-                          onClick={() => handleToggleFollowUser(item.id)}
-                          disabled={item.isReported}
-                        >
-                          {item.isUserFollowed ? (
-                            <UserCheck className="mr-1 h-3 w-3" /> 
-                          ) : (
-                            <UserPlus className="mr-1 h-3 w-3" />
-                          )}
-                          {item.isUserFollowed ? "Following" : "Follow"}
-                        </Button>
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      {item.user.role} &bull; Updated {item.updatedTime}
-                    </p>
-                  </div>
-                </div>
-                {!item.isReported && (
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => handleHidePost(item.id)} disabled={item.isReported}>
-                    <X className="h-4 w-4" />
-                  </Button>
-                )}
+        {/* Main Content Feed */}
+        <main className="lg:col-span-9 xl:col-span-7 py-6 space-y-6 px-4 lg:px-0">
+          <Card className="shadow-md">
+            <CardHeader className="pb-2">
+              <div className="flex items-center gap-3">
+                <Avatar>
+                  <AvatarImage src={user?.photoURL ?? undefined} alt={user?.displayName ?? "User"} data-ai-hint="user avatar small"/>
+                  <AvatarFallback>{getInitials(user?.displayName)}</AvatarFallback>
+                </Avatar>
+                <p className="font-medium text-foreground">Create Post</p>
               </div>
             </CardHeader>
-            <CardContent>
-              {item.question && <h3 className="text-lg font-semibold mb-2">{item.question}</h3>}
-              <p className="text-sm text-foreground/90 whitespace-pre-line">
-                {item.content}
-              </p>
-              {item.imageUrl && (
-                <div className="mt-4 rounded-lg overflow-hidden border">
-                  <Image
-                    src={item.imageUrl}
-                    alt={item.question || "Feed image"}
-                    width={600}
-                    height={400}
-                    className="w-full h-auto object-cover"
-                    data-ai-hint={item.imageHint}
-                  />
-                </div>
-              )}
-            </CardContent>
-            <CardFooter className="flex items-center justify-between text-sm text-muted-foreground pt-4 border-t">
-              <div className="flex items-center gap-4">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className={cn(
-                    "flex items-center gap-1.5 hover:bg-accent/50",
-                    item.isUpvotedByUser ? "text-primary hover:text-primary/90" : "text-muted-foreground hover:text-primary"
-                  )}
-                  onClick={() => handleUpvote(item.id)}
-                  disabled={item.isReported}
-                >
-                  <ArrowBigUp className={cn("h-5 w-5", item.isUpvotedByUser ? "fill-primary" : "")} />
-                  {item.upvotes > 1000 ? (item.upvotes/1000).toFixed(1) + 'k' : item.upvotes}
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="flex items-center gap-1.5 text-muted-foreground hover:bg-accent/50 hover:text-primary"
-                  onClick={() => handleCommentClick(item.id)}
-                  disabled={item.isReported}
-                >
-                  <MessageCircle className="h-5 w-5" /> {item.comments}
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="flex items-center gap-1.5 text-muted-foreground hover:bg-accent/50 hover:text-primary"
-                  onClick={() => handleShareClick(item.id)}
-                  disabled={item.isReported}
-                >
-                  <Repeat className="h-5 w-5" /> {item.shares}
-                </Button>
-              </div>
-              {!item.isReported && (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:bg-accent/50 hover:text-primary" disabled={item.isReported}>
-                      <MoreHorizontal className="h-5 w-5" />
+            <CardContent className="pt-2">
+              <Tabs defaultValue="share" className="w-full" onValueChange={setActivePostType}>
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="share">Share Update</TabsTrigger>
+                  <TabsTrigger value="ask">Ask Question</TabsTrigger>
+                </TabsList>
+                <form onSubmit={handlePostSubmit}>
+                  <TabsContent value="share" className="mt-4">
+                    <Textarea
+                      placeholder="What's on your mind? Share an update..."
+                      value={postText}
+                      onChange={(e) => setPostText(e.target.value)}
+                      rows={4}
+                      className="w-full text-sm"
+                      disabled={isSubmittingPost}
+                    />
+                  </TabsContent>
+                  <TabsContent value="ask" className="mt-4">
+                    <Textarea
+                      placeholder="What question do you have for the community? Be specific."
+                      value={postText}
+                      onChange={(e) => setPostText(e.target.value)}
+                      rows={4}
+                      className="w-full text-sm"
+                      disabled={isSubmittingPost}
+                    />
+                  </TabsContent>
+                  <div className="flex justify-end items-center mt-4 gap-2">
+                    <Button type="submit" disabled={!postText.trim() || isSubmittingPost}>
+                      {isSubmittingPost ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Posting...
+                        </>
+                      ) : (
+                        "Post"
+                      )}
                     </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => handleReportPost(item.id)}>
-                      <Flag className="mr-2 h-4 w-4" /> Report post
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleToggleSavePost(item.id)}>
-                       {item.isSaved ? <Bookmark className="mr-2 h-4 w-4 fill-current" /> : <Bookmark className="mr-2 h-4 w-4" />}
-                      {item.isSaved ? "Unsave post" : "Save post"}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleHidePost(item.id)}>
-                      Not interested in this post
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              )}
-            </CardFooter>
+                  </div>
+                </form>
+              </Tabs>
+            </CardContent>
           </Card>
-        ))}
-      </main>
 
-      {/* Right Sidebar */}
-      <aside className="hidden xl:block xl:col-span-3 py-6 space-y-6 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto">
-        {ads.map((ad) => (
-           <Card key={ad.id} className="shadow-md overflow-hidden">
-            {ad.imageUrl && (
-                <Image src={ad.imageUrl} alt={ad.title} width={300} height={200} className="w-full h-auto object-cover" data-ai-hint={ad.imageHint}/>
-            )}
-            <CardContent className="p-3">
-                <Link href={ad.linkUrl} target="_blank" rel="noopener noreferrer" className="text-sm font-semibold hover:underline block">
-                    {ad.title}
-                </Link>
-                <p className="text-xs text-muted-foreground mt-1">{ad.advertiser}</p>
-            </CardContent>
-           </Card>
-        ))}
-         <Card className="shadow-none border-none bg-transparent mt-4">
-            <CardContent className="p-2 text-xs text-muted-foreground">
-                Advertisement
-            </CardContent>
-        </Card>
-      </aside>
+          {displayedFeedItems.map((item) => (
+            <Card key={item.id} className={cn("shadow-md", item.isReported && "opacity-60")}>
+              <CardHeader>
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-3">
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src={item.user.avatarUrl} alt={item.user.name} data-ai-hint={item.user.avatarHint} />
+                      <AvatarFallback>{getInitials(item.user.name)}</AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <div className="flex items-center gap-1">
+                          <Link href="#" className="font-semibold text-sm hover:underline">{item.user.name}</Link>
+                          <span className="text-sm text-muted-foreground">&bull;</span>
+                          <Button 
+                            variant={item.isUserFollowed ? "outline" : "link"} 
+                            size="sm" 
+                            className={cn(
+                              "p-0 h-auto text-xs", 
+                              item.isUserFollowed ? "px-2 py-1 border-primary text-primary" : "text-primary hover:text-primary/80"
+                            )}
+                            onClick={() => handleToggleFollowUser(item.id)}
+                            disabled={item.isReported}
+                          >
+                            {item.isUserFollowed ? (
+                              <UserCheck className="mr-1 h-3 w-3" /> 
+                            ) : (
+                              <UserPlus className="mr-1 h-3 w-3" />
+                            )}
+                            {item.isUserFollowed ? "Following" : "Follow"}
+                          </Button>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        {item.user.role} &bull; Updated {item.updatedTime}
+                      </p>
+                    </div>
+                  </div>
+                  {!item.isReported && (
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => handleHidePost(item.id)} disabled={item.isReported}>
+                      <X className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent>
+                {item.question && <h3 className="text-lg font-semibold mb-2">{item.question}</h3>}
+                <p className="text-sm text-foreground/90 whitespace-pre-line">
+                  {item.content}
+                </p>
+                {item.imageUrl && (
+                  <div className="mt-4 rounded-lg overflow-hidden border">
+                    <Image
+                      src={item.imageUrl}
+                      alt={item.question || "Feed image"}
+                      width={600}
+                      height={400}
+                      className="w-full h-auto object-cover"
+                      data-ai-hint={item.imageHint}
+                    />
+                  </div>
+                )}
+              </CardContent>
+              <CardFooter className="flex items-center justify-between text-sm text-muted-foreground pt-4 border-t">
+                <div className="flex items-center gap-4">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className={cn(
+                      "flex items-center gap-1.5 hover:bg-accent/50",
+                      item.isUpvotedByUser ? "text-primary hover:text-primary/90" : "text-muted-foreground hover:text-primary"
+                    )}
+                    onClick={() => handleUpvote(item.id)}
+                    disabled={item.isReported}
+                  >
+                    <ArrowBigUp className={cn("h-5 w-5", item.isUpvotedByUser ? "fill-primary" : "")} />
+                    {item.upvotes > 1000 ? (item.upvotes/1000).toFixed(1) + 'k' : item.upvotes}
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="flex items-center gap-1.5 text-muted-foreground hover:bg-accent/50 hover:text-primary"
+                    onClick={() => handleCommentClick(item.id)}
+                    disabled={item.isReported}
+                  >
+                    <MessageCircle className="h-5 w-5" /> {item.comments}
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="flex items-center gap-1.5 text-muted-foreground hover:bg-accent/50 hover:text-primary"
+                    onClick={() => handleShareClick(item.id)}
+                    disabled={item.isReported}
+                  >
+                    <Repeat className="h-5 w-5" /> {item.shares}
+                  </Button>
+                </div>
+                {!item.isReported && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:bg-accent/50 hover:text-primary" disabled={item.isReported}>
+                        <MoreHorizontal className="h-5 w-5" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => handleReportPost(item.id)}>
+                        <Flag className="mr-2 h-4 w-4" /> Report post
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleToggleSavePost(item.id)}>
+                         {item.isSaved ? <Bookmark className="mr-2 h-4 w-4 fill-current" /> : <Bookmark className="mr-2 h-4 w-4" />}
+                        {item.isSaved ? "Unsave post" : "Save post"}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleHidePost(item.id)}>
+                        Not interested in this post
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
+              </CardFooter>
+            </Card>
+          ))}
+        </main>
+
+        {/* Right Sidebar */}
+        <aside className="hidden xl:block xl:col-span-3 sticky top-16 h-[calc(100vh-4rem)]">
+           <div className="h-full overflow-y-auto py-6 space-y-6"> {/* Added py-6 and space-y-6 here */}
+            {ads.map((ad) => (
+              <Card key={ad.id} className="shadow-md overflow-hidden">
+                {ad.imageUrl && (
+                    <Image src={ad.imageUrl} alt={ad.title} width={300} height={200} className="w-full h-auto object-cover" data-ai-hint={ad.imageHint}/>
+                )}
+                <CardContent className="p-3">
+                    <Link href={ad.linkUrl} target="_blank" rel="noopener noreferrer" className="text-sm font-semibold hover:underline block">
+                        {ad.title}
+                    </Link>
+                    <p className="text-xs text-muted-foreground mt-1">{ad.advertiser}</p>
+                </CardContent>
+              </Card>
+            ))}
+            <Card className="shadow-none border-none bg-transparent mt-4">
+                <CardContent className="p-2 text-xs text-muted-foreground">
+                    Advertisement
+                </CardContent>
+            </Card>
+          </div>
+        </aside>
+      </div>
     </div>
   );
 }
-
-    
