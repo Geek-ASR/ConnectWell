@@ -355,7 +355,7 @@ export default function DashboardPage() {
               <Button
                 key={space.name}
                 variant="ghost"
-                className="w-full justify-start text-muted-foreground hover:text-foreground"
+                className="w-full justify-start text-muted-foreground hover:text-foreground border border-transparent"
                 asChild
               >
                 <Link href={space.href}>
