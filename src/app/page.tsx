@@ -60,7 +60,7 @@ export default function HomePage() {
       <Header />
       <main className="flex-grow">
         {/* Hero Section */}
-        <section className="py-20 md:py-32 bg-gradient-to-br from-primary/10 via-background to-accent/10">
+        <section className="py-20 md:py-32 bg-gradient-to-br from-primary/10 via-background to-accent/10 animate-fadeInUp">
           <div className="container mx-auto max-w-7xl px-4 text-center">
             <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-foreground">
               Welcome to <span className="text-primary">ConnectWell</span>
