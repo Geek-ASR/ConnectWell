@@ -6,16 +6,24 @@ import { Footer } from "@/components/layout/Footer";
 import Link from "next/link";
 import { UsersRound, MessageSquareText, ListPlus, ShieldCheck, ArrowRight } from "lucide-react";
 import Image from "next/image";
+import { cn } from "@/lib/utils";
 
 interface FeatureCardProps {
   icon: React.ElementType;
   title: string;
   description: string;
+  animationDelay?: string;
 }
 
-function FeatureCard({ icon: Icon, title, description }: FeatureCardProps) {
+function FeatureCard({ icon: Icon, title, description, animationDelay }: FeatureCardProps) {
   return (
-    <Card className="flex flex-col shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg overflow-hidden">
+    <Card 
+      className={cn(
+        "flex flex-col shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg overflow-hidden",
+        "opacity-0 animate-fadeInUp" // Apply animation and initial opacity
+      )}
+      style={{ animationDelay: animationDelay, animationFillMode: 'forwards' }} // Apply delay and ensure it stays at final state
+    >
       <CardHeader className="bg-card-foreground/5 p-6">
         <div className="flex items-center gap-4">
           <div className="p-3 rounded-full bg-primary/10 text-primary">
@@ -107,8 +115,12 @@ export default function HomePage() {
               </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-              {features.map((feature) => (
-                <FeatureCard key={feature.title} {...feature} />
+              {features.map((feature, index) => (
+                <FeatureCard 
+                  key={feature.title} 
+                  {...feature} 
+                  animationDelay={`${index * 150}ms`} // Stagger the animation delay
+                />
               ))}
             </div>
           </div>
