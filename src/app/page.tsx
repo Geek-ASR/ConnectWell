@@ -25,7 +25,7 @@ export default function HomePage() {
       <main className="flex-grow overflow-x-hidden">
         {/* Hero Section */}
         <section className="relative py-20 md:py-32 min-h-[80vh] md:min-h-[90vh] flex items-center justify-center overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--primary)/0.3)] via-[hsl(var(--accent)/0.1)] to-[hsl(var(--secondary)/0.2)] opacity-80 dark:opacity-60"></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--primary)/0.3)] via-[hsl(var(--accent)/0.1)] to-[hsl(var(--secondary)/0.2)] opacity-80 dark:opacity-60 z-0"></div>
 
           <div className="container mx-auto max-w-7xl px-4 relative z-10">
             <div className="grid lg:grid-cols-2 gap-x-8 gap-y-12 items-center">
@@ -100,7 +100,12 @@ export default function HomePage() {
               <ChevronDown className="h-8 w-8 text-muted-foreground animate-scroll-indicator-bounce" />
             </div>
           </div>
+           {/* Fade-out overlay at the bottom of the hero section */}
+          <div className="absolute bottom-0 left-0 right-0 h-32 md:h-48 bg-gradient-to-t from-background/50 via-transparent to-transparent z-[1]"></div>
         </section>
+
+        {/* Transition 1: After Hero, Before Illustration */}
+        <div className="h-20 md:h-32 bg-gradient-to-b from-secondary/10 to-background/50" />
 
         <section className="py-16 bg-background/50 backdrop-blur-sm">
           <div className="container mx-auto max-w-5xl px-4">
@@ -117,8 +122,14 @@ export default function HomePage() {
           </div>
         </section>
         
+        {/* Transition 2: After Illustration, Before Discover */}
+        <div className="h-16 md:h-24 bg-gradient-to-b from-background/50 to-background/30" />
+
         <InteractiveDiscoverSection />
 
+        {/* Transition 3: After Discover, Before Newsletter */}
+        <div className="h-20 md:h-32 bg-gradient-to-b from-background/30 to-transparent" />
+        
         {/* Newsletter Signup Section */}
         <section className="py-16 md:py-24 bg-gradient-to-br from-accent/10 via-background to-secondary/20">
           <div className="container mx-auto max-w-3xl px-4 text-center">
@@ -134,9 +145,12 @@ export default function HomePage() {
           </div>
         </section>
 
+        {/* Transition 4: After Newsletter, Before CTA */}
+        <div className="h-20 md:h-32 bg-gradient-to-b from-secondary/20 to-transparent" />
+
         {/* Call to Action Section */}
         <section className="py-16 md:py-24 relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-r from-sky-200/70 via-mint-200/70 to-lavender-200/70 dark:from-sky-800/30 dark:via-mint-800/30 dark:to-lavender-800/30 opacity-70"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-[hsl(var(--primary)/0.7)] via-[hsl(var(--accent)/0.7)] to-[hsl(var(--secondary)/0.7)] opacity-70"></div>
           <div className="container mx-auto max-w-4xl px-4 text-center relative z-10">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground">
               Ready to Find Your Community?
@@ -160,8 +174,8 @@ export default function HomePage() {
                 { name: "Partner B", hint: "wellness app logo" },
                 { name: "Partner C", hint: "medical research logo" },
                 { name: "Partner D", hint: "support group logo" },
-              ].map((partner) => (
-                <div key={partner.name} className="flex justify-center opacity-0 animate-fadeInUp" style={{animationDelay: `${0.8 + parseInt(partner.name.slice(-1), 16)*0.1}s`}}>
+              ].map((partner, index) => ( // Added index for animation delay
+                <div key={partner.name} className={cn("flex justify-center opacity-0 animate-fadeInUp")} style={{animationDelay: `${0.8 + index*0.1}s`}}>
                   <Image
                     src={`https://placehold.co/150x60.png?text=${encodeURIComponent(partner.name)}`}
                     alt={partner.name}
@@ -180,3 +194,5 @@ export default function HomePage() {
     </div>
   );
 }
+
+    
