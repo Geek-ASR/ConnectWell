@@ -1,89 +1,97 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Removed direct font-family declaration for body, 
-   as it's now handled by Tailwind's font-sans utility 
-   and the font variables on the html tag. */
-
 @layer base {
   :root {
-    --background: 190 75% 92%; /* Light desaturated blue #E0F7FA */
-    --foreground: 210 30% 25%; /* Darker grayish blue for text #3A4B5F */
-    --card: 0 0% 100%; /* White cards */
-    --card-foreground: 210 30% 25%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 210 30% 25%;
-    --primary: 205 67% 63%; /* Comforting blue #5DADE2 */
-    --primary-foreground: 0 0% 100%; /* White text on primary */
-    --secondary: 205 60% 88%; /* Lighter shade of primary #CDE7F7 */
-    --secondary-foreground: 205 50% 30%; /* Darker blue text on secondary #3C6C8C */
-    --muted: 190 40% 85%; /* Muted light blue #C7E8ED */
-    --muted-foreground: 190 25% 45%; /* Softer text color #678A8F */
-    --accent: 145 62% 70%; /* Gentle green #82E0AA */
-    --accent-foreground: 145 40% 20%; /* Dark green text on accent #2A5C3A */
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 190 30% 80%; /* Subtle border color #B8DDE1 */
-    --input: 0 0% 100%; /* White input background for better contrast */
-    --ring: 205 67% 63%; /* Primary color for rings */
-    --radius: 0.5rem;
+    /* Soft Wellness Palette: Sky Blue, Mint, Light Lavender */
+    --background: 255 70% 96%; /* Very Light Lavender (almost white) #F5F2FA */
+    --foreground: 240 10% 30%; /* Dark muted grayish blue #424753 */
+    
+    --card: 255 50% 100% / 0.6; /* White with opacity for glassmorphism */
+    --card-foreground: 240 10% 25%; /* Darker for card text #363B46 */
+    
+    --popover: 255 80% 98%; /* Light popover #FCFAFE */
+    --popover-foreground: 240 10% 25%;
 
-    /* Chart colors - using default, can be adjusted */
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
+    --primary: 195 77% 75%; /* Sky Blue #A8DFF1 */
+    --primary-foreground: 210 40% 15%; /* Darker blue/grey for text on primary #1C2A38 */
+    
+    --secondary: 210 60% 92%; /* Lighter Sky Blue / Off-white blue #E3EFF7 */
+    --secondary-foreground: 200 30% 35%; /* Muted blue text #4A606B */
+
+    --muted: 220 50% 90%; /* Muted Lavender Blue #DCE0F2 */
+    --muted-foreground: 220 25% 50%; /* #70789A */
+    
+    --accent: 150 65% 80%; /* Mint Green #B3E6CC */
+    --accent-foreground: 150 30% 25%; /* Darker mint for text on accent #335C47 */
+    
+    --destructive: 0 72% 51%; /* Adjusted for better harmony */
+    --destructive-foreground: 0 0% 98%;
+    
+    --border: 220 30% 85% / 0.5; /* Softer, slightly transparent border #C8CCD9 */
+    --input: 255 50% 100% / 0.7; /* Semi-transparent white input */
+    --ring: 195 77% 65%; /* Brighter Sky Blue for focus rings #85D3ED */
+    
+    --radius: 1rem; /* Default radius, can be overridden by rounded-2xl etc. */
+
+    /* Chart colors - can be adjusted if charts are used */
+    --chart-1: 195 70% 60%;
+    --chart-2: 150 60% 65%;
+    --chart-3: 250 60% 75%;
+    --chart-4: 220 70% 70%;
+    --chart-5: 30 80% 70%;
 
     /* Sidebar specific colors */
-    --sidebar-background: 200 60% 96%; /* Very light blue #EDF5F7 */
-    --sidebar-foreground: 210 25% 28%; /* Darker blue for text #3A4759 */
-    --sidebar-primary: 205 67% 63%; /* Primary blue */
-    --sidebar-primary-foreground: 0 0% 100%; /* White text */
-    --sidebar-accent: 145 62% 70%; /* Accent green */
-    --sidebar-accent-foreground: 145 40% 20%; /* Dark green text */
-    --sidebar-border: 200 30% 88%; /* #D3E2E6 */
-    --sidebar-ring: 205 67% 63%; /* Primary blue for ring */
+    --sidebar-background: 240 60% 97%; /* Very light lavender/blue tint #F3F4FA */
+    --sidebar-foreground: 240 10% 35%; /* #4E5360 */
+    --sidebar-primary: 195 77% 75%; /* Sky Blue */
+    --sidebar-primary-foreground: 210 40% 15%;
+    --sidebar-accent: 150 65% 80%; /* Mint Green */
+    --sidebar-accent-foreground: 150 30% 25%;
+    --sidebar-border: 220 40% 90% / 0.8; /* #DCDFF2 */
+    --sidebar-ring: 195 77% 65%;
   }
 
   .dark {
-    --background: 210 20% 12%; /* Dark blue-gray #1A202C */
-    --foreground: 190 60% 90%; /* Light desaturated blue text #D9F1F4 */
-    --card: 210 20% 15%; /* #202834 */
-    --card-foreground: 190 60% 90%;
-    --popover: 210 20% 15%;
-    --popover-foreground: 190 60% 90%;
-    --primary: 205 67% 63%; /* Comforting blue #5DADE2 */
-    --primary-foreground: 210 40% 10%; /* Dark text on primary #131A21 */
-    --secondary: 205 50% 30%; /* Darker shade of primary for bg #32556B */
-    --secondary-foreground: 205 70% 85%; /* Lighter text on dark secondary #B8D6E8 */
-    --muted: 210 20% 20%; /* #2D3748 */
-    --muted-foreground: 190 40% 65%; /* #94B4B8 */
-    --accent: 145 62% 70%; /* Gentle green #82E0AA */
-    --accent-foreground: 145 40% 15%; /* Dark text on accent #1E422A */
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 210 15% 25%; /* #354152 */
-    --input: 210 15% 22%; /* #2E3A4C */
-    --ring: 205 67% 70%; /* Slightly lighter primary for rings */
+    --background: 240 10% 15%; /* Dark Slate Blue #20232F */
+    --foreground: 220 40% 85%; /* Light Lavender Gray #C8CCD9 */
 
-    /* Chart colors - using default dark, can be adjusted */
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+    --card: 240 10% 20% / 0.6; /* Darker translucent card #2A2D3B */
+    --card-foreground: 220 40% 90%; /* Lighter text for dark cards #DDE0F2 */
+
+    --popover: 240 10% 18%; /* Dark popover #252835 */
+    --popover-foreground: 220 40% 90%;
+
+    --primary: 195 70% 65%; /* Sky Blue (slightly desaturated for dark) #85D3ED */
+    --primary-foreground: 210 30% 10%; /* Very dark blue #121820 */
+    
+    --secondary: 240 8% 25%; /* Darker secondary bg #3A3D4A */
+    --secondary-foreground: 220 30% 75%; /* Muted light gray #B2B8CC */
+
+    --muted: 240 8% 30%; /* Dark muted #424553 */
+    --muted-foreground: 220 25% 65%; /* Lighter muted text #9BA0B8 */
+    
+    --accent: 150 55% 60%; /* Mint Green (slightly desaturated) #7FCBA4 */
+    --accent-foreground: 150 25% 15%; /* Darker mint on accent #1F3D2E */
+    
+    --destructive: 0 60% 45%;
+    --destructive-foreground: 0 0% 95%;
+    
+    --border: 240 5% 35% / 0.5; /* Darker, slightly transparent border #535663 */
+    --input: 240 5% 22% / 0.7; /* Darker semi-transparent input #313440 */
+    --ring: 195 70% 55%; /* Sky Blue for focus rings in dark #6CBDE0 */
 
     /* Sidebar specific colors for dark mode */
-    --sidebar-background: 210 25% 14%; /* Slightly darker than main bg #1D2633 */
-    --sidebar-foreground: 190 50% 88%; /* #D3EDF0 */
-    --sidebar-primary: 205 67% 63%; /* Primary blue */
-    --sidebar-primary-foreground: 210 40% 10%; /* Dark text */
-    --sidebar-accent: 145 62% 70%; /* Accent green */
-    --sidebar-accent-foreground: 145 40% 15%; /* Dark green text */
-    --sidebar-border: 210 15% 23%; /* #313C4B */
-    --sidebar-ring: 205 67% 70%; /* Lighter primary blue for ring */
+    --sidebar-background: 240 10% 18%; /* #252835 */
+    --sidebar-foreground: 220 30% 80%; /* #BEC3D6 */
+    --sidebar-primary: 195 70% 65%; 
+    --sidebar-primary-foreground: 210 30% 10%;
+    --sidebar-accent: 150 55% 60%;
+    --sidebar-accent-foreground: 150 25% 15%;
+    --sidebar-border: 240 5% 30% / 0.8; /* #424553 */
+    --sidebar-ring: 195 70% 55%;
   }
 }
 
@@ -94,5 +102,14 @@
   body {
     @apply bg-background text-foreground;
     /* font-family will be applied by .font-sans utility class on body tag */
+  }
+}
+
+@layer utilities {
+  .glassmorphism-card {
+    @apply bg-card backdrop-blur-md shadow-xl border border-white/20;
+  }
+  .text-gradient-primary-accent {
+    @apply bg-gradient-to-r from-primary to-accent text-transparent bg-clip-text;
   }
 }
