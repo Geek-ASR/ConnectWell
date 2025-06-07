@@ -75,7 +75,7 @@ const FeatureCardDesktop: React.FC<Feature & { index: number }> = ({ Icon, title
   );
 };
 
-const FeatureCardMobile: React.FC<Feature> = ({ Icon, title, description, iconAnimationClass }) => {
+const FeatureCardMobile: React.FC<Feature> = ({ id, Icon, title, description, iconAnimationClass }) => {
   return (
     <AccordionItem value={id} className="border-none mb-4">
       <AccordionTrigger className="p-5 rounded-2xl glassmorphism-card hover:bg-card/80 transition-colors data-[state=open]:bg-card/90">
@@ -108,7 +108,7 @@ export function InteractiveDiscoverSection() {
         {/* Desktop Layout */}
         <div className="hidden md:grid grid-cols-3 grid-rows-3 gap-4 lg:gap-6 place-items-center md:max-w-3xl lg:max-w-4xl mx-auto min-h-[500px] lg:min-h-[600px] relative">
           {/* Central Plus Symbol */}
-          <div 
+          <div
             className="row-start-2 col-start-2 flex items-center justify-center w-full h-full opacity-0 animate-fadeInUp group"
             style={{ animationDelay: '200ms', animationFillMode: 'forwards' }}
           >
@@ -127,9 +127,9 @@ export function InteractiveDiscoverSection() {
         <div className="md:hidden space-y-0">
           <Accordion type="single" collapsible className="w-full">
             {mentorshipFeatures.map((feature, index) => (
-               <div 
-                key={feature.id} 
-                className="opacity-0 animate-fadeInUp" 
+               <div
+                key={feature.id}
+                className="opacity-0 animate-fadeInUp"
                 style={{ animationDelay: `${index * 100 + 200}ms`, animationFillMode: 'forwards' }}
               >
                 <FeatureCardMobile {...feature} />

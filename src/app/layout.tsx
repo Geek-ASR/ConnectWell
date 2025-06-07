@@ -3,10 +3,9 @@ import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { AuthProvider } from '@/contexts/AuthContext';
-import { ThemeProvider } from '@/contexts/ThemeContext'; // Import ThemeProvider
+import { ThemeProvider } from '@/contexts/ThemeContext';
 import { Toaster } from "@/components/ui/toaster";
-import { Button } from '@/components/ui/button';
-import { MessageSquare } from 'lucide-react'; // Correctly added import
+import { FloatingChatButton } from '@/components/layout/FloatingChatButton';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -35,16 +34,7 @@ export default function RootLayout({
           <AuthProvider>
             {children}
             <Toaster />
-            {/* Floating Chatbot Icon */}
-            <Button
-              variant="outline"
-              size="icon"
-              className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-xl animate-slow-pulse border-2 border-primary/50 hover:scale-110 transition-transform glassmorphism-card z-50"
-              aria-label="Open Chatbot"
-              onClick={() => alert("Chatbot feature coming soon!")} // Placeholder action
-            >
-              <MessageSquare className="h-7 w-7 text-primary" />
-            </Button>
+            <FloatingChatButton /> {/* Use the client component here */}
           </AuthProvider>
         </ThemeProvider>
       </body>
