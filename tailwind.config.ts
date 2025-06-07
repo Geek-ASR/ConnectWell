@@ -68,11 +68,11 @@ export default {
   			}
   		},
   		borderRadius: {
-        '4xl': '2rem', // For extra rounded corners
+        '4xl': '2rem', 
         '3xl': '1.5rem',
-  			lg: 'var(--radius)', // default is 1rem now in globals
-  			md: 'calc(var(--radius) - 4px)', // 0.75rem
-  			sm: 'calc(var(--radius) - 8px)'  // 0.5rem
+  			lg: 'var(--radius)', 
+  			md: 'calc(var(--radius) - 4px)', 
+  			sm: 'calc(var(--radius) - 8px)'  
   		},
   		keyframes: {
   			'accordion-down': {
@@ -111,18 +111,24 @@ export default {
           '0%, 20%, 50%, 80%, 100%': { transform: 'translateY(0)' },
           '40%': { transform: 'translateY(-10px)' },
           '60%': { transform: 'translateY(-5px)' }
-        }
+        },
+        'shake': {
+          '0%, 100%': { transform: 'translateX(0)' },
+          '10%, 30%, 50%, 70%, 90%': { transform: 'translateX(-6px)' },
+          '20%, 40%, 60%, 80%': { transform: 'translateX(6px)' },
+        },
   		},
   		animation: {
   			'accordion-down': 'accordion-down 0.2s ease-out',
   			'accordion-up': 'accordion-up 0.2s ease-out',
         'fadeInUp': 'fadeInUp 0.8s ease-out forwards',
         'slideInFromLeft': 'slideInFromLeft 0.8s ease-out forwards',
-        'button-bounce-once': 'button-bounce 0.5s ease-in-out 1 forwards 1s', /* 1s delay, runs once */
+        'button-bounce-once': 'button-bounce 0.5s ease-in-out 1 forwards 1s',
         'pulse-glow-subtle': 'pulse-glow 2s infinite ease-in-out',
         'shimmer': 'shimmer 3s infinite linear',
         'slow-pulse': 'slow-pulse 2.5s infinite ease-in-out',
         'scroll-indicator-bounce': 'scroll-indicator-bounce 2s infinite',
+        'shake': 'shake 0.4s ease-in-out',
   		}
   	}
   },
