@@ -29,7 +29,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`} suppressHydrationWarning>
-      <body className="antialiased font-sans bg-background text-foreground transition-colors duration-300">
+      <body className="antialiased font-sans bg-background text-foreground transition-colors duration-300" suppressHydrationWarning>
         <ThemeProvider> {/* Wrap AuthProvider and children with ThemeProvider */}
           <AuthProvider>
             {children}
