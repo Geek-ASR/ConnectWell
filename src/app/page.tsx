@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import Link from "next/link";
-import { ArrowRight, ChevronDown, Users, MessageSquare, Brain, ShieldCheck } from "lucide-react";
+import { ArrowRight, ChevronDown } from "lucide-react";
 import Image from "next/image";
 import { InteractiveDiscoverSection } from "@/components/InteractiveDiscoverSection";
 import { cn } from "@/lib/utils";
@@ -24,69 +24,88 @@ export default function HomePage() {
       <main className="flex-grow overflow-x-hidden"> {/* Prevent horizontal scroll from animations */}
         {/* Hero Section */}
         <section className="relative py-20 md:py-32 min-h-[80vh] md:min-h-[90vh] flex items-center justify-center overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-secondary/10 to-accent/20 opacity-50"></div>
-          <div className="container mx-auto max-w-7xl px-4 text-center relative z-10">
-            <h1
+          {/* Soft Gradient Background */}
+          <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--primary)/0.3)] via-[hsl(var(--accent)/0.2)] to-[hsl(var(--secondary)/0.3)] opacity-80 dark:opacity-60"></div>
+
+          <div className="container mx-auto max-w-7xl px-4 relative z-10">
+            <div className="grid lg:grid-cols-2 gap-x-8 gap-y-12 items-center">
+              {/* Text Content Area (Left) */}
+              <div className="text-center lg:text-left">
+                <h1
+                  className={cn(
+                    "text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-foreground opacity-0",
+                    heroAnimated && "animate-slideInFromLeft"
+                  )}
+                  style={{ animationDelay: '0.2s' }}
+                >
+                  Welcome to <span className="text-gradient-primary-accent">ConnectWell</span>
+                </h1>
+                <p
+                  className={cn(
+                    "mt-6 max-w-xl mx-auto lg:mx-0 text-lg md:text-xl text-muted-foreground opacity-0",
+                    heroAnimated && "animate-slideInFromLeft"
+                  )}
+                  style={{ animationDelay: '0.4s' }}
+                >
+                  Find understanding, share experiences, and build supportive communities on your health journey.
+                </p>
+                <div
+                  className={cn(
+                    "mt-10 flex flex-col sm:flex-row justify-center lg:justify-start gap-4 opacity-0",
+                    heroAnimated && "animate-fadeInUp"
+                  )}
+                  style={{ animationDelay: '0.6s' }}
+                >
+                  <Button
+                    size="lg"
+                    asChild
+                    className="shadow-lg animate-button-bounce-once transition-all duration-300 hover:scale-105 group relative overflow-hidden hover:shadow-[0_0_25px_3px_hsl(var(--primary)/0.5)] focus:shadow-[0_0_25px_3px_hsl(var(--primary)/0.5)]"
+                  >
+                    <Link href="/signup">
+                      <span className="absolute inset-0 w-full h-full bg-primary-foreground/10 mix-blend-overlay opacity-0 group-hover:opacity-100 transition-opacity duration-500"></span>
+                      Join Our Community <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                    </Link>
+                  </Button>
+                  <Button size="lg" variant="outline" asChild className="shadow-lg hover:shadow-accent/30 transition-shadow duration-300 hover:scale-105 glassmorphism-card border-border/50 hover:bg-card/50">
+                    <Link href="/#discover">Learn More</Link>
+                  </Button>
+                </div>
+              </div>
+
+              {/* Visual Element (Right) - Hidden on small screens, appears on large */}
+              <div 
+                className={cn(
+                  "hidden lg:flex justify-center items-center opacity-0",
+                  heroAnimated && "animate-fadeInUp" 
+                )}
+                style={{ animationDelay: '0.5s' }} 
+              >
+                <Image
+                  src="https://placehold.co/600x500.png"
+                  alt="Interactive Lottie animation or 3D looping scene of community connections or wellness symbols"
+                  width={600}
+                  height={500}
+                  className="rounded-3xl shadow-2xl object-cover aspect-[6/5]" 
+                  data-ai-hint="Lottie animation community connection wellness symbols clay style"
+                  priority
+                />
+              </div>
+            </div>
+
+            {/* Scroll Indicator - Centered at the bottom of the section */}
+            <div 
               className={cn(
-                "text-4xl md:text-6xl font-extrabold tracking-tight text-foreground opacity-0",
-                heroAnimated && "animate-slideInFromLeft"
-              )}
-              style={{ animationDelay: '0.2s' }}
-            >
-              Welcome to <span className="text-gradient-primary-accent">ConnectWell</span>
-            </h1>
-            <p
-              className={cn(
-                "mt-6 max-w-2xl mx-auto text-lg md:text-xl text-muted-foreground opacity-0",
-                heroAnimated && "animate-slideInFromLeft"
-              )}
-              style={{ animationDelay: '0.4s' }}
-            >
-              Find understanding, share experiences, and build supportive communities on your health journey.
-            </p>
-            <div
-              className={cn(
-                "mt-10 flex flex-col sm:flex-row justify-center gap-4 opacity-0",
+                "absolute bottom-8 left-1/2 -translate-x-1/2 opacity-0", 
                 heroAnimated && "animate-fadeInUp"
               )}
-              style={{ animationDelay: '0.6s' }}
-            >
-              <Button
-                size="lg"
-                asChild
-                className="shadow-lg animate-button-bounce-once hover:shadow-primary/40 transition-all duration-300 hover:scale-105 group relative overflow-hidden"
-              >
-                <Link href="/signup">
-                  <span className="absolute inset-0 w-full h-full bg-primary-foreground/10 mix-blend-overlay opacity-0 group-hover:opacity-100 transition-opacity duration-500"></span>
-                  Join Our Community <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                </Link>
-              </Button>
-              <Button size="lg" variant="outline" asChild className="shadow-lg hover:shadow-accent/30 transition-shadow duration-300 hover:scale-105 glassmorphism-card border-border/50 hover:bg-card/50">
-                <Link href="/#discover">Learn More</Link>
-              </Button>
-            </div>
-             <div 
-              className={cn("absolute bottom-8 left-1/2 -translate-x-1/2 opacity-0", heroAnimated && "animate-fadeInUp")}
-              style={{ animationDelay: '1s' }}
+              style={{ animationDelay: '1.2s' }} // Increased delay
             >
               <ChevronDown className="h-8 w-8 text-muted-foreground animate-scroll-indicator-bounce" />
             </div>
           </div>
-          <div className="absolute inset-0 z-0">
-            {/* Placeholder for complex Lottie/3D visual */}
-            <Image
-              src="https://placehold.co/1920x1080.png"
-              alt="Abstract wellness background"
-              layout="fill"
-              objectFit="cover"
-              className="opacity-10 saturate-50"
-              data-ai-hint="abstract wellness illustration subtle 3D shapes"
-              priority
-            />
-          </div>
         </section>
 
-        {/* Illustration Section (Can be removed or updated if Hero is sufficient) */}
+        {/* Illustration Section (Kept for now, can be removed or updated) */}
         <section className="py-16 bg-background/50 backdrop-blur-sm">
           <div className="container mx-auto max-w-5xl px-4">
             <div className="glassmorphism-card p-2 rounded-3xl">
@@ -150,3 +169,4 @@ export default function HomePage() {
     </div>
   );
 }
+
