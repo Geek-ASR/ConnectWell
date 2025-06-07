@@ -111,12 +111,12 @@ export default function HomePage() {
           <div className="container mx-auto max-w-5xl px-4">
             <div className="glassmorphism-card p-2 rounded-3xl">
               <Image
-                src="https://placehold.co/1200x600.png"
+                src="https://images.unsplash.com/photo-1469571486292-0ba58a3f068b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxNHx8SGVhbHRoJTIwY29tbXVuaXR5fGVufDB8fHx8MTc0OTMzNjQzMnww&ixlib=rb-4.1.0&q=80&w=1080"
                 alt="ConnectWell community interaction scene"
                 width={1200}
                 height={600}
                 className="rounded-2xl shadow-2xl"
-                data-ai-hint="clay style community figures connecting health wellness"
+                data-ai-hint="community health"
               />
             </div>
           </div>
