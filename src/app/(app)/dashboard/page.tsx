@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -16,7 +15,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"; 
+// Removed Sheet related imports as they are no longer used
 import {
   ArrowBigUp,
   Briefcase,
@@ -24,12 +23,10 @@ import {
   FilePlus2,
   Globe,
   Image as ImageIcon,
-  Lightbulb, 
   Link as LinkIcon,
   List,
   MessageCircle,
   MoreHorizontal,
-  PlusCircle,
   Repeat,
   Search,
   Settings2,
@@ -43,16 +40,8 @@ import {
   Bookmark, 
   Flag, 
   UserPlus, 
-  UserCheck, 
-  LayoutGrid, 
-  FlaskConical,
-  HeartHandshake,
-  HeartPulse,
-  Baby,
-  Info,
-  FileText,
-  Shield,
-  FileBadge,
+  UserCheck,
+  // Removed LayoutGrid, PlusCircle, FlaskConical, Lightbulb, HeartHandshake, HeartPulse, Baby as they are no longer used
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -61,11 +50,7 @@ import { moderateContent, type ModerateContentOutput } from "@/ai/flows/ai-moder
 import { useToast } from "@/hooks/use-toast";
 
 
-interface SpaceItem {
-  name: string;
-  icon: React.ElementType;
-  href: string;
-}
+// Removed SpaceItem interface as it's no longer used
 
 interface FeedItem {
   id: string;
@@ -171,13 +156,7 @@ const initialFeedItems: FeedItem[] = [
   },
 ];
 
-const spaces: SpaceItem[] = [
-  { name: "Medical Research", icon: FlaskConical, href: "/medical-research" },
-  { name: "Mental Wellness", icon: Lightbulb, href: "/mental-wellness" },
-  { name: "Chronic Illness Support", icon: HeartHandshake, href: "/chronic-illness" },
-  { name: "Fitness & Recovery", icon: HeartPulse, href: "/fitness-recovery" }, 
-  { name: "Pediatric Health", icon: Baby, href: "/pediatric-health" },
-];
+// Removed 'spaces' array as it's no longer used
 
 const ads: AdItem[] = [
   {
@@ -198,29 +177,7 @@ const ads: AdItem[] = [
   },
 ];
 
-const DashboardSpacesSidebarContent = () => {
-  return (
-    <div className="flex flex-col h-full p-4 space-y-1">
-      <Button variant="outline" className="w-full justify-start h-auto py-2.5 px-3 text-sm mb-2 shadow-sm hover:bg-primary/10">
-        <PlusCircle className="mr-2 h-4 w-4 flex-shrink-0" />
-        <span className="min-w-0">Create Space</span>
-      </Button>
-      {spaces.map((space) => (
-        <Button
-          key={space.name}
-          variant="ghost"
-          className="w-full justify-start text-muted-foreground hover:text-foreground border border-transparent h-auto py-2 px-3 text-sm"
-          asChild
-        >
-          <Link href={space.href} className="flex items-center text-left w-full">
-            <space.icon className="mr-2.5 h-4 w-4 flex-shrink-0" />
-            <span className="min-w-0 truncate">{space.name}</span>
-          </Link>
-        </Button>
-      ))}
-    </div>
-  );
-};
+// Removed DashboardSpacesSidebarContent component as it's no longer used by this page
 
 
 export default function DashboardPage() {
@@ -230,7 +187,7 @@ export default function DashboardPage() {
   const [activePostType, setActivePostType] = useState("share");
   const [displayedFeedItems, setDisplayedFeedItems] = useState<FeedItem[]>(initialFeedItems);
   const [isSubmittingPost, setIsSubmittingPost] = useState(false);
-  const [isMobileSpacesOpen, setIsMobileSpacesOpen] = useState(false);
+  // Removed isMobileSpacesOpen state as it's no longer used
 
   const getInitials = (name: string | null | undefined) => {
     if (!name) return "U";
@@ -386,44 +343,9 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen">
-      {/* Mobile Sheet Trigger for Spaces */}
-      <Sheet open={isMobileSpacesOpen} onOpenChange={setIsMobileSpacesOpen}>
-        <SheetTrigger asChild>
-          <Button 
-            variant="outline" 
-            size="icon" 
-            className="lg:hidden fixed top-[calc(var(--header-height,4rem)+1rem)] left-4 z-40 h-10 w-10 rounded-full shadow-md border-border/70 bg-background/80 hover:bg-accent"
-            style={{'--header-height': '4rem'} as React.CSSProperties} // Assuming header height is 4rem
-            aria-label="Open spaces navigation"
-            onClick={() => setIsMobileSpacesOpen(true)}
-          >
-            <LayoutGrid className="h-5 w-5 text-muted-foreground" />
-          </Button>
-        </SheetTrigger>
-        <SheetContent 
-            side="left" 
-            className="w-[280px] p-0 pt-10 glassmorphism-card border-r-0 bg-sidebar text-sidebar-foreground"
-            onCloseAutoFocus={(e) => e.preventDefault()} // Prevent focus on trigger after close
-        >
-          <SheetHeader className="p-4 pt-0 border-b border-sidebar-border mb-2">
-            <SheetTitle className="text-lg font-semibold text-sidebar-foreground">Spaces & Categories</SheetTitle>
-          </SheetHeader>
-          <div className="h-full overflow-y-auto pb-10"> {/* Added pb-10 for scroll spacing */}
-            <DashboardSpacesSidebarContent />
-          </div>
-        </SheetContent>
-      </Sheet>
-
+      {/* Mobile Sheet Trigger for Spaces - REMOVED */}
+      
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-x-6 xl:gap-x-8">
-        {/* Desktop Left Sidebar for Spaces - REMOVED */}
-        {/*
-        <aside className="hidden lg:block lg:col-span-3 xl:col-span-2 sticky top-16 h-[calc(100vh-4rem)]">
-           <div className="h-full overflow-y-auto">
-            <DashboardSpacesSidebarContent />
-          </div>
-        </aside>
-        */}
-
         <main className="lg:col-span-12 xl:col-span-9 py-6 space-y-6 px-4 lg:px-0">
           <Card className="shadow-md border-border/50">
             <CardHeader className="pb-3 pt-4">
@@ -634,4 +556,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
