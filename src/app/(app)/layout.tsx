@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { usePathname, useRouter } from "next/navigation"; // Import usePathname
+import { usePathname, useRouter } from "next/navigation"; 
 import { useAuth } from "@/contexts/AuthContext";
 import {
   SidebarProvider,
@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/sidebar";
 import { UserNav } from "@/components/auth/UserNav";
 import Link from "next/link";
-import { LayoutDashboard, Users, UserCircle2, Settings, HeartHandshake, LogOut, FlaskConical } from "lucide-react"; // Added FlaskConical
+import { LayoutDashboard, Users, UserCircle2, Settings, HeartHandshake, LogOut, FlaskConical, Lightbulb } from "lucide-react"; // Added Lightbulb
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -29,7 +29,7 @@ export default function AppLayout({
 }) {
   const { user, loading, logout } = useAuth();
   const router = useRouter();
-  const pathname = usePathname(); // Get current pathname
+  const pathname = usePathname(); 
 
   useEffect(() => {
     if (!loading && !user) {
@@ -49,13 +49,14 @@ export default function AppLayout({
   }
 
   if (!user) {
-    return null; // Or a redirect component
+    return null; 
   }
   
   const sidebarNavItems = [
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { href: "/communities", label: "Communities", icon: Users },
-    { href: "/medical-research", label: "Medical Research", icon: FlaskConical }, // Added Medical Research
+    { href: "/medical-research", label: "Medical Research", icon: FlaskConical },
+    { href: "/mental-wellness", label: "Mental Wellness", icon: Lightbulb }, // Added Mental Wellness
     { href: "/profile", label: "My Profile", icon: UserCircle2 },
     { href: "/settings", label: "Settings", icon: Settings, disabled: true },
   ];
@@ -75,7 +76,7 @@ export default function AppLayout({
               <SidebarMenuItem key={item.label}>
                 <SidebarMenuButton
                   asChild
-                  isActive={pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href))} // Updated isActive logic for nested routes
+                  isActive={pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href))} 
                   tooltip={item.label}
                   disabled={item.disabled}
                 >
@@ -97,11 +98,10 @@ export default function AppLayout({
       </Sidebar>
       <SidebarInset>
         <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b bg-background px-4 sm:px-6 lg:px-8">
-          <div className="md:hidden"> {/* Only show trigger on mobile/tablet if sidebar is collapsible */}
+          <div className="md:hidden"> 
             <SidebarTrigger />
           </div>
           <div className="flex-1">
-            {/* Breadcrumbs or page title can go here */}
           </div>
           <UserNav />
         </header>

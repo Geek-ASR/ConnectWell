@@ -24,7 +24,7 @@ import {
   FilePlus2,
   Globe,
   Image as ImageIcon,
-  Lightbulb,
+  Lightbulb, // Already imported
   Link as LinkIcon,
   List,
   MessageCircle,
@@ -45,7 +45,7 @@ import {
   UserPlus, 
   UserCheck, 
   LayoutGrid, 
-  FlaskConical, // Added FlaskConical
+  FlaskConical,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -165,8 +165,8 @@ const initialFeedItems: FeedItem[] = [
 ];
 
 const spaces: SpaceItem[] = [
-  { name: "Medical Research", icon: FlaskConical, href: "/medical-research" }, // Updated href and icon
-  { name: "Mental Wellness", icon: Lightbulb, href: "#" },
+  { name: "Medical Research", icon: FlaskConical, href: "/medical-research" },
+  { name: "Mental Wellness", icon: Lightbulb, href: "/mental-wellness" }, // Updated href
   { name: "Chronic Illness Support", icon: Users, href: "#" },
   { name: "Fitness & Recovery", icon: TrendingUp, href: "#" },
   { name: "Pediatric Health", icon: Star, href: "#" },
@@ -271,7 +271,7 @@ export default function DashboardPage() {
           updatedTime: "Just now",
           content: postText,
           question: activePostType === "ask" ? postText : undefined,
-          tags: ["New", "Discussion"], // Placeholder tags
+          tags: ["New", "Discussion"], 
           upvotes: 0,
           comments: 0,
           shares: 0,
@@ -324,8 +324,6 @@ export default function DashboardPage() {
   };
 
   const handleCommentClick = (postId: string) => {
-    // This would typically open a comment input or navigate to a detailed post view
-    // For now, we just increment the comment count as a simulation
     setDisplayedFeedItems(prevItems =>
       prevItems.map(item =>
         item.id === postId ? { ...item, comments: item.comments + 1 } : item
@@ -446,12 +444,10 @@ export default function DashboardPage() {
                   />
                   <div className="flex justify-between items-center mt-3">
                     <div className="flex gap-2">
-                        {/* Placeholder for image upload icon - not functional */}
                         <Button type="button" variant="ghost" size="icon" className="text-muted-foreground hover:text-primary h-8 w-8" disabled={isSubmittingPost}>
                             <ImageIcon className="h-4 w-4"/>
                             <span className="sr-only">Add image</span>
                         </Button>
-                         {/* Placeholder for tagging icon - not functional */}
                         <Button type="button" variant="ghost" size="icon" className="text-muted-foreground hover:text-primary h-8 w-8" disabled={isSubmittingPost}>
                             <List className="h-4 w-4"/>
                             <span className="sr-only">Add tags</span>
@@ -473,7 +469,6 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
 
-          {/* Feed Items */}
           {displayedFeedItems.map((item) => (
             <Card key={item.id} className={cn("shadow-md border-border/50", item.isReported && "opacity-50 pointer-events-none")}>
               <CardHeader className="pb-3 pt-4">
