@@ -16,7 +16,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"; // Added Sheet imports
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"; 
 import {
   ArrowBigUp,
   Briefcase,
@@ -44,7 +44,7 @@ import {
   Flag, 
   UserPlus, 
   UserCheck, 
-  LayoutGrid, // Added for mobile sidebar trigger
+  LayoutGrid, 
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -66,12 +66,14 @@ interface FeedItem {
     avatarUrl: string;
     avatarHint: string;
     role: string;
+    isVerified?: boolean;
   };
   updatedTime: string;
   question?: string;
   content: string;
   imageUrl?: string;
   imageHint?: string;
+  tags?: string[];
   upvotes: number;
   comments: number;
   shares: number;
@@ -94,18 +96,20 @@ const initialFeedItems: FeedItem[] = [
   {
     id: "1",
     user: {
-      name: "Dr. Emily Carter, a renowned cardiologist leading research in hypertension",
+      name: "Dr. Emily Carter",
       avatarUrl: "https://placehold.co/40x40.png?text=EC",
       avatarHint: "doctor portrait",
       role: "Cardiologist, Lead Researcher",
+      isVerified: true,
     },
     updatedTime: "5h ago",
-    question: "What are the latest advancements in treating hypertension?",
+    question: "Latest advancements in hypertension treatment?",
     content:
-      "Recent studies show promising results with new combination therapies and lifestyle intervention programs. One particular study highlighted the impact of personalized medicine... (more)",
+      "Recent studies show promising results with new combination therapies and personalized lifestyle intervention programs. One particular study highlighted the impact of personalized medicine approach in managing high blood pressure effectively, leading to better patient outcomes and fewer side effects compared to traditional methods. Further research is ongoing to explore long-term benefits.",
     imageUrl: "https://placehold.co/600x400.png",
     imageHint: "medical research",
-    upvotes: 1200,
+    tags: ["Hypertension", "Cardiology", "Research"],
+    upvotes: 1256,
     comments: 78,
     shares: 45,
     isUpvotedByUser: false,
@@ -116,14 +120,15 @@ const initialFeedItems: FeedItem[] = [
   {
     id: "2",
     user: {
-      name: "John Smith, patient advocate and diabetes educator working with communities",
+      name: "John Smith",
       avatarUrl: "https://placehold.co/40x40.png?text=JS",
       avatarHint: "patient advocate",
       role: "Patient Advocate, Diabetes Educator",
     },
     updatedTime: "1d ago",
     content:
-      "Sharing my journey managing Type 2 Diabetes. It's been a rollercoaster, but finding a supportive community and the right diet plan has made a huge difference. Happy to answer questions or share tips! #diabetes #healthjourney",
+      "Sharing my journey managing Type 2 Diabetes. It's been a rollercoaster, but finding a supportive community and the right diet plan has made a huge difference. Consistency with glucose monitoring and regular exercise are key. Happy to answer questions or share tips! #diabetes #healthjourney #communitysupport",
+    tags: ["Diabetes", "Patient Story", "Wellness"],
     upvotes: 850,
     comments: 123,
     shares: 22,
@@ -135,17 +140,19 @@ const initialFeedItems: FeedItem[] = [
   {
     id: "3",
     user: {
-      name: "Wellness Hub Community Space for Health Discussions",
+      name: "Wellness Hub",
       avatarUrl: "https://placehold.co/40x40.png?text=WH",
       avatarHint: "wellness logo",
       role: "Community Space",
+      isVerified: true,
     },
     updatedTime: "3d ago",
     question: "Best practices for post-operative care at home?",
     content:
-      "Recovering from surgery requires careful attention to medication, wound care, and mobility. We've compiled a list of essential tips from healthcare professionals to ensure a smooth recovery process. Read more on our blog...",
+      "Recovering from surgery requires careful attention to medication schedules, wound care, and mobility exercises. We've compiled a list of essential tips from healthcare professionals to ensure a smooth recovery process. Remember to follow your doctor's specific instructions. Read more on our blog...",
     imageUrl: "https://placehold.co/600x400.png",
     imageHint: "home recovery",
+    tags: ["PostOp", "Recovery", "Healthcare"],
     upvotes: 930,
     comments: 55,
     shares: 30,
@@ -157,12 +164,11 @@ const initialFeedItems: FeedItem[] = [
 ];
 
 const spaces: SpaceItem[] = [
-  { name: "Medical Research Today & Tomorrow: Innovations and Discoveries", icon: Briefcase, href: "#" },
-  { name: "Global Health Initiatives & Policy Making Discussions", icon: Globe, href: "#" },
-  { name: "Chronic Illness Support Network and Personal Stories", icon: Users, href: "#" },
-  { name: "Mental Wellness Journeys: Coping, Healing, and Growth", icon: Lightbulb, href: "#" },
-  { name: "Fitness & Recovery: Strategies for a Healthier Lifestyle", icon: TrendingUp, href: "#" },
-  { name: "Pediatric Health and Child Development Insights", icon: Star, href: "#" },
+  { name: "Medical Research", icon: Briefcase, href: "#" },
+  { name: "Mental Wellness", icon: Lightbulb, href: "#" },
+  { name: "Chronic Illness Support", icon: Users, href: "#" },
+  { name: "Fitness & Recovery", icon: TrendingUp, href: "#" },
+  { name: "Pediatric Health", icon: Star, href: "#" },
 ];
 
 const ads: AdItem[] = [
@@ -184,43 +190,35 @@ const ads: AdItem[] = [
   },
 ];
 
-// Component for the content of the dashboard's left sidebar
 const DashboardSpacesSidebarContent = () => {
   return (
     <div className="flex flex-col h-full">
-      <div className="p-4 space-y-2 flex-grow"> {/* Reduced space-y from 6 to 2 for denser packing, added p-4 */}
-        <Card className="shadow-none border-none bg-transparent">
-          <CardContent className="p-0 space-y-1"> {/* Reduced space-y */}
-            <Button variant="outline" className="w-full justify-start h-auto py-2 px-2 text-sm">
-              <PlusCircle className="mr-2 h-4 w-4 flex-shrink-0" /> {/* Adjusted icon size */}
-              <span className="min-w-0">Create Space</span>
-            </Button>
-            {spaces.map((space) => (
-              <Button
-                key={space.name}
-                variant="ghost"
-                className="w-full justify-start text-muted-foreground hover:text-foreground border border-transparent h-auto py-2 px-2 text-sm"
-                asChild
-              >
-                <Link href={space.href} className="flex items-center text-left w-full">
-                  <space.icon className="mr-2 h-4 w-4 flex-shrink-0" /> {/* Adjusted icon size */}
-                  <span className="min-w-0">{space.name}</span>
-                </Link>
-              </Button>
-            ))}
-          </CardContent>
-        </Card>
+      <div className="p-4 space-y-1 flex-grow">
+        <Button variant="outline" className="w-full justify-start h-auto py-2.5 px-3 text-sm mb-2 shadow-sm hover:bg-primary/10">
+          <PlusCircle className="mr-2 h-4 w-4 flex-shrink-0" />
+          <span className="min-w-0">Create Space</span>
+        </Button>
+        {spaces.map((space) => (
+          <Button
+            key={space.name}
+            variant="ghost"
+            className="w-full justify-start text-muted-foreground hover:text-foreground border border-transparent h-auto py-2 px-3 text-sm"
+            asChild
+          >
+            <Link href={space.href} className="flex items-center text-left w-full">
+              <space.icon className="mr-2.5 h-4 w-4 flex-shrink-0" />
+              <span className="min-w-0 truncate">{space.name}</span>
+            </Link>
+          </Button>
+        ))}
       </div>
-      <div className="p-4 mt-auto border-t border-border"> {/* Footer links area, mt-auto to push to bottom */}
-        <Separator className="my-2 lg:my-0 lg:hidden" /> {/* Separator for mobile/tablet sheet */}
+      <div className="p-4 mt-auto border-t border-border/50">
         <div className="space-y-1 text-xs text-muted-foreground">
           <Link href="#" className="hover:underline block">About</Link>
           <Link href="#" className="hover:underline block">Careers</Link>
           <Link href="#" className="hover:underline block">Terms</Link>
           <Link href="#" className="hover:underline block">Privacy</Link>
           <Link href="#" className="hover:underline block">Acceptable Use</Link>
-          <Link href="#" className="hover:underline block">Your Ad Choices</Link>
-          <Link href="#" className="hover:underline block">Grievance Officer</Link>
         </div>
       </div>
     </div>
@@ -235,7 +233,7 @@ export default function DashboardPage() {
   const [activePostType, setActivePostType] = useState("share");
   const [displayedFeedItems, setDisplayedFeedItems] = useState<FeedItem[]>(initialFeedItems);
   const [isSubmittingPost, setIsSubmittingPost] = useState(false);
-  const [isMobileSpacesOpen, setIsMobileSpacesOpen] = useState(false); // State for mobile sidebar
+  const [isMobileSpacesOpen, setIsMobileSpacesOpen] = useState(false);
 
   const getInitials = (name: string | null | undefined) => {
     if (!name) return "U";
@@ -258,7 +256,7 @@ export default function DashboardPage() {
         toast({
           variant: "destructive",
           title: "Content Moderation",
-          description: moderationResult.reason || "This content violates community guidelines.",
+          description: moderationResult.reason || "This content violates community guidelines. Please revise.",
         });
       } else {
         const newPost: FeedItem = {
@@ -272,6 +270,7 @@ export default function DashboardPage() {
           updatedTime: "Just now",
           content: postText,
           question: activePostType === "ask" ? postText : undefined,
+          tags: ["New", "Discussion"], // Placeholder tags
           upvotes: 0,
           comments: 0,
           shares: 0,
@@ -324,13 +323,15 @@ export default function DashboardPage() {
   };
 
   const handleCommentClick = (postId: string) => {
+    // This would typically open a comment input or navigate to a detailed post view
+    // For now, we just increment the comment count as a simulation
     setDisplayedFeedItems(prevItems =>
       prevItems.map(item =>
         item.id === postId ? { ...item, comments: item.comments + 1 } : item
       )
     );
     toast({
-      description: "Comment added (simulation). Viewing comments not yet implemented.",
+      description: "Comment interaction simulated. Full comment functionality is not yet implemented.",
     });
   };
 
@@ -390,8 +391,7 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen">
-      {/* Mobile/Tablet Sidebar Trigger */}
-      <div className="lg:hidden p-4 border-b">
+      <div className="lg:hidden p-4 border-b border-border/50">
         <Sheet open={isMobileSpacesOpen} onOpenChange={setIsMobileSpacesOpen}>
           <SheetTrigger asChild>
             <Button variant="outline" className="w-full sm:w-auto">
@@ -399,64 +399,67 @@ export default function DashboardPage() {
               Spaces & Options
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="w-[300px] p-0 flex flex-col">
-            <DashboardSpacesSidebarContent />
+          <SheetContent side="left" className="w-[300px] flex flex-col p-0">
+            <SheetHeader className="p-4 border-b border-border/50">
+              <SheetTitle>Menu</SheetTitle>
+            </SheetHeader>
+            <div className="flex-grow overflow-y-auto">
+              <DashboardSpacesSidebarContent />
+            </div>
           </SheetContent>
         </Sheet>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-x-6 xl:gap-x-8">
-        {/* Left Sidebar for Desktop */}
         <aside className="hidden lg:block lg:col-span-3 xl:col-span-2 sticky top-16 h-[calc(100vh-4rem)]">
-           <div className="h-full overflow-y-auto"> {/* Removed py-6 to let content manage padding */}
+           <div className="h-full overflow-y-auto">
             <DashboardSpacesSidebarContent />
           </div>
         </aside>
 
-        {/* Main Content Feed */}
         <main className="lg:col-span-9 xl:col-span-7 py-6 space-y-6 px-4 lg:px-0">
-          <Card className="shadow-md">
-            <CardHeader className="pb-2">
+          <Card className="shadow-md border-border/50">
+            <CardHeader className="pb-3 pt-4">
               <div className="flex items-center gap-3">
-                <Avatar>
+                <Avatar className="h-11 w-11">
                   <AvatarImage src={user?.photoURL ?? undefined} alt={user?.displayName ?? "User"} data-ai-hint="user avatar small"/>
-                  <AvatarFallback>{getInitials(user?.displayName)}</AvatarFallback>
+                  <AvatarFallback className="text-lg">{getInitials(user?.displayName)}</AvatarFallback>
                 </Avatar>
-                <p className="font-medium text-foreground">Create Post</p>
+                <p className="font-medium text-foreground">{user?.displayName || "Create a Post"}</p>
               </div>
             </CardHeader>
-            <CardContent className="pt-2">
+            <CardContent className="pt-0">
               <Tabs defaultValue="share" className="w-full" onValueChange={setActivePostType}>
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="share">Share Update</TabsTrigger>
-                  <TabsTrigger value="ask">Ask Question</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-2 mb-3 h-9">
+                  <TabsTrigger value="share" className="text-xs">Share Update</TabsTrigger>
+                  <TabsTrigger value="ask" className="text-xs">Ask Question</TabsTrigger>
                 </TabsList>
                 <form onSubmit={handlePostSubmit}>
-                  <TabsContent value="share" className="mt-4">
-                    <Textarea
-                      placeholder="What's on your mind? Share an update..."
-                      value={postText}
-                      onChange={(e) => setPostText(e.target.value)}
-                      rows={4}
-                      className="w-full text-sm"
-                      disabled={isSubmittingPost}
-                    />
-                  </TabsContent>
-                  <TabsContent value="ask" className="mt-4">
-                    <Textarea
-                      placeholder="What question do you have for the community? Be specific."
-                      value={postText}
-                      onChange={(e) => setPostText(e.target.value)}
-                      rows={4}
-                      className="w-full text-sm"
-                      disabled={isSubmittingPost}
-                    />
-                  </TabsContent>
-                  <div className="flex justify-end items-center mt-4 gap-2">
-                    <Button type="submit" disabled={!postText.trim() || isSubmittingPost}>
+                  <Textarea
+                    placeholder={activePostType === "share" ? "What's on your mind? Share an update, experience, or insight..." : "What health-related question do you have for the community? Be specific."}
+                    value={postText}
+                    onChange={(e) => setPostText(e.target.value)}
+                    rows={3}
+                    className="w-full text-sm border-border/70 focus:ring-primary/50"
+                    disabled={isSubmittingPost}
+                  />
+                  <div className="flex justify-between items-center mt-3">
+                    <div className="flex gap-2">
+                        {/* Placeholder for image upload icon - not functional */}
+                        <Button type="button" variant="ghost" size="icon" className="text-muted-foreground hover:text-primary h-8 w-8" disabled={isSubmittingPost}>
+                            <ImageIcon className="h-4 w-4"/>
+                            <span className="sr-only">Add image</span>
+                        </Button>
+                         {/* Placeholder for tagging icon - not functional */}
+                        <Button type="button" variant="ghost" size="icon" className="text-muted-foreground hover:text-primary h-8 w-8" disabled={isSubmittingPost}>
+                            <List className="h-4 w-4"/>
+                            <span className="sr-only">Add tags</span>
+                        </Button>
+                    </div>
+                    <Button type="submit" disabled={!postText.trim() || isSubmittingPost} className="min-w-[100px] h-9 text-xs">
                       {isSubmittingPost ? (
                         <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
                           Posting...
                         </>
                       ) : (
@@ -469,9 +472,10 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
 
+          {/* Feed Items */}
           {displayedFeedItems.map((item) => (
-            <Card key={item.id} className={cn("shadow-md", item.isReported && "opacity-60")}>
-              <CardHeader>
+            <Card key={item.id} className={cn("shadow-md border-border/50", item.isReported && "opacity-50 pointer-events-none")}>
+              <CardHeader className="pb-3 pt-4">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
                     <Avatar className="h-10 w-10">
@@ -479,18 +483,18 @@ export default function DashboardPage() {
                       <AvatarFallback>{getInitials(item.user.name)}</AvatarFallback>
                     </Avatar>
                     <div>
-                      <div className="flex items-center gap-1">
-                          <Link href="#" className="font-semibold text-sm hover:underline">{item.user.name}</Link>
-                          <span className="text-sm text-muted-foreground">&bull;</span>
+                      <div className="flex items-center gap-1.5">
+                          <Link href="#" className="font-semibold text-sm hover:underline text-foreground">{item.user.name}</Link>
+                          {item.user.isVerified && <ShieldCheck className="h-4 w-4 text-primary fill-primary/20" title="Verified Medical Professional"/>}
+                          <span className="text-xs text-muted-foreground">&bull;</span>
                           <Button 
-                            variant={item.isUserFollowed ? "outline" : "link"} 
+                            variant={item.isUserFollowed ? "secondary" : "ghost"} 
                             size="sm" 
                             className={cn(
-                              "p-0 h-auto text-xs", 
-                              item.isUserFollowed ? "px-2 py-1 border-primary text-primary" : "text-primary hover:text-primary/80"
+                              "p-0 h-auto text-xs rounded-md", 
+                              item.isUserFollowed ? "px-2 py-0.5 border border-primary/50 text-primary" : "text-primary hover:text-primary/80 hover:bg-primary/10"
                             )}
                             onClick={() => handleToggleFollowUser(item.id)}
-                            disabled={item.isReported}
                           >
                             {item.isUserFollowed ? (
                               <UserCheck className="mr-1 h-3 w-3" /> 
@@ -501,86 +505,94 @@ export default function DashboardPage() {
                           </Button>
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        {item.user.role} &bull; Updated {item.updatedTime}
+                        {item.user.role} &bull; {item.updatedTime}
                       </p>
                     </div>
                   </div>
                   {!item.isReported && (
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => handleHidePost(item.id)} disabled={item.isReported}>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:bg-accent/50" onClick={() => handleHidePost(item.id)}>
                       <X className="h-4 w-4" />
+                       <span className="sr-only">Hide post</span>
                     </Button>
                   )}
                 </div>
               </CardHeader>
-              <CardContent>
-                {item.question && <h3 className="text-lg font-semibold mb-2">{item.question}</h3>}
-                <p className="text-sm text-foreground/90 whitespace-pre-line">
+              <CardContent className="pb-3">
+                {item.question && <h3 className="text-md font-semibold mb-1.5 text-foreground">{item.question}</h3>}
+                <p className="text-sm text-foreground/90 whitespace-pre-line leading-relaxed">
                   {item.content}
                 </p>
                 {item.imageUrl && (
-                  <div className="mt-4 rounded-lg overflow-hidden border">
+                  <div className="mt-3 rounded-lg overflow-hidden border border-border/50 aspect-video relative">
                     <Image
                       src={item.imageUrl}
                       alt={item.question || "Feed image"}
-                      width={600}
-                      height={400}
-                      className="w-full h-auto object-cover"
+                      fill
+                      style={{objectFit: 'cover'}}
+                      className="bg-muted"
                       data-ai-hint={item.imageHint}
                     />
                   </div>
                 )}
+                {item.tags && item.tags.length > 0 && (
+                    <div className="mt-3 flex flex-wrap gap-1.5">
+                        {item.tags.map(tag => (
+                            <span key={tag} className="px-2 py-0.5 text-xs bg-secondary text-secondary-foreground rounded-full cursor-pointer hover:bg-secondary/80">
+                                #{tag}
+                            </span>
+                        ))}
+                    </div>
+                )}
               </CardContent>
-              <CardFooter className="flex items-center justify-between text-sm text-muted-foreground pt-4 border-t">
-                <div className="flex items-center gap-4">
+              <CardFooter className="flex items-center justify-between text-sm text-muted-foreground pt-3 border-t border-border/50">
+                <div className="flex items-center gap-1 sm:gap-2">
                   <Button
                     variant="ghost"
                     size="sm"
                     className={cn(
-                      "flex items-center gap-1.5 hover:bg-accent/50",
-                      item.isUpvotedByUser ? "text-primary hover:text-primary/90" : "text-muted-foreground hover:text-primary"
+                      "flex items-center gap-1 px-2 py-1 h-auto text-xs",
+                      item.isUpvotedByUser ? "text-primary hover:text-primary/90" : "text-muted-foreground hover:text-primary hover:bg-primary/10"
                     )}
                     onClick={() => handleUpvote(item.id)}
-                    disabled={item.isReported}
                   >
-                    <ArrowBigUp className={cn("h-5 w-5", item.isUpvotedByUser ? "fill-primary" : "")} />
+                    <ArrowBigUp className={cn("h-4 w-4", item.isUpvotedByUser ? "fill-primary" : "")} />
                     {item.upvotes > 1000 ? (item.upvotes/1000).toFixed(1) + 'k' : item.upvotes}
                   </Button>
                   <Button 
                     variant="ghost" 
                     size="sm" 
-                    className="flex items-center gap-1.5 text-muted-foreground hover:bg-accent/50 hover:text-primary"
+                    className="flex items-center gap-1 text-muted-foreground hover:text-primary hover:bg-primary/10 px-2 py-1 h-auto text-xs"
                     onClick={() => handleCommentClick(item.id)}
-                    disabled={item.isReported}
                   >
-                    <MessageCircle className="h-5 w-5" /> {item.comments}
+                    <MessageCircle className="h-4 w-4" /> {item.comments}
                   </Button>
                   <Button 
                     variant="ghost" 
                     size="sm" 
-                    className="flex items-center gap-1.5 text-muted-foreground hover:bg-accent/50 hover:text-primary"
+                    className="flex items-center gap-1 text-muted-foreground hover:text-primary hover:bg-primary/10 px-2 py-1 h-auto text-xs"
                     onClick={() => handleShareClick(item.id)}
-                    disabled={item.isReported}
                   >
-                    <Repeat className="h-5 w-5" /> {item.shares}
+                    <Repeat className="h-4 w-4" /> {item.shares}
                   </Button>
                 </div>
-                {!item.isReported && (
+                 {!item.isReported && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:bg-accent/50 hover:text-primary" disabled={item.isReported}>
-                        <MoreHorizontal className="h-5 w-5" />
+                      <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:bg-accent/50 hover:text-primary">
+                        <MoreHorizontal className="h-4 w-4" />
+                         <span className="sr-only">More options</span>
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
+                    <DropdownMenuContent align="end" className="w-48">
+                       <DropdownMenuItem onClick={() => handleToggleSavePost(item.id)}>
+                         {item.isSaved ? <Bookmark className="mr-2 h-4 w-4 fill-current text-primary" /> : <Bookmark className="mr-2 h-4 w-4" />}
+                        {item.isSaved ? "Unsave post" : "Save post"}
+                      </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => handleReportPost(item.id)}>
                         <Flag className="mr-2 h-4 w-4" /> Report post
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleToggleSavePost(item.id)}>
-                         {item.isSaved ? <Bookmark className="mr-2 h-4 w-4 fill-current" /> : <Bookmark className="mr-2 h-4 w-4" />}
-                        {item.isSaved ? "Unsave post" : "Save post"}
-                      </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => handleHidePost(item.id)}>
-                        Not interested in this post
+                        <X className="mr-2 h-4 w-4" /> Not interested
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -590,24 +602,25 @@ export default function DashboardPage() {
           ))}
         </main>
 
-        {/* Right Sidebar */}
         <aside className="hidden xl:block xl:col-span-3 sticky top-16 h-[calc(100vh-4rem)]">
-           <div className="h-full overflow-y-auto py-6 space-y-6"> {/* Added py-6 and space-y-6 here */}
+           <div className="h-full overflow-y-auto py-6 space-y-6">
             {ads.map((ad) => (
-              <Card key={ad.id} className="shadow-md overflow-hidden">
+              <Card key={ad.id} className="shadow-md overflow-hidden border-border/50">
                 {ad.imageUrl && (
-                    <Image src={ad.imageUrl} alt={ad.title} width={300} height={200} className="w-full h-auto object-cover" data-ai-hint={ad.imageHint}/>
+                    <div className="aspect-[3/2] relative bg-muted">
+                        <Image src={ad.imageUrl} alt={ad.title} fill style={{objectFit: 'cover'}} data-ai-hint={ad.imageHint}/>
+                    </div>
                 )}
                 <CardContent className="p-3">
-                    <Link href={ad.linkUrl} target="_blank" rel="noopener noreferrer" className="text-sm font-semibold hover:underline block">
+                    <Link href={ad.linkUrl} target="_blank" rel="noopener noreferrer" className="text-sm font-semibold hover:underline block text-foreground">
                         {ad.title}
                     </Link>
-                    <p className="text-xs text-muted-foreground mt-1">{ad.advertiser}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{ad.advertiser}</p>
                 </CardContent>
               </Card>
             ))}
             <Card className="shadow-none border-none bg-transparent mt-4">
-                <CardContent className="p-2 text-xs text-muted-foreground">
+                <CardContent className="p-2 text-xs text-muted-foreground text-center">
                     Advertisement
                 </CardContent>
             </Card>
@@ -617,3 +630,4 @@ export default function DashboardPage() {
     </div>
   );
 }
+
