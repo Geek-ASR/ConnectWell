@@ -1,5 +1,5 @@
 
-"use client"; // Keep this for now as functions might be used by client components directly
+"use client"; 
 
 export interface Comment {
   id: string;
@@ -19,7 +19,7 @@ export interface PostInCommunity {
   userAvatarHint: string;
   title: string;
   content: string;
-  comments: number; // Will represent commentObjects.length
+  comments: number; 
   commentObjects: Comment[];
   upvotes: number;
   time: string;
@@ -32,10 +32,10 @@ export interface Community {
   description: string;
   longDescription: string;
   members: number;
-  image: string;
+  image: string; // This is treated as the community icon/avatar
   imageHint: string;
-  bannerImage?: string;
-  bannerImageHint?: string;
+  bannerImage: string; // This is the cover image
+  bannerImageHint: string;
   posts: PostInCommunity[];
   foundedDate: string;
   rules: string;
@@ -67,17 +67,25 @@ export const getAllCommunities = (): Community[] => {
   return [...initialCommunities];
 };
 
-export const addCommunity = (communityData: { name: string; description: string; longDescription: string }): Community => {
+interface AddCommunityData {
+  name: string;
+  description: string;
+  longDescription: string;
+  bannerImage?: string; // Optional user-provided banner image data URI
+  bannerImageHint?: string; // Hint for the user-provided banner image
+}
+
+export const addCommunity = (communityData: AddCommunityData): Community => {
   const newCommunity: Community = {
     id: Date.now().toString(),
     name: communityData.name,
     description: communityData.description,
     longDescription: communityData.longDescription,
-    members: 0, // New communities start with 0 members
-    image: `https://placehold.co/400x250.png?text=${encodeURIComponent(communityData.name.substring(0,3))}`,
-    imageHint: generateHintFromName(communityData.name),
-    bannerImage: `https://placehold.co/1200x400.png?text=${encodeURIComponent(communityData.name.substring(0,3))}`,
-    bannerImageHint: generateHintFromName(communityData.name, "banner"),
+    members: 0, 
+    image: `https://placehold.co/400x250.png?text=${encodeURIComponent(communityData.name.substring(0,3))}`, // Placeholder for icon, AI will generate later
+    imageHint: generateHintFromName(communityData.name, "icon"),
+    bannerImage: communityData.bannerImage || `https://placehold.co/1200x400.png?text=${encodeURIComponent(communityData.name.substring(0,3))}`,
+    bannerImageHint: communityData.bannerImageHint || generateHintFromName(communityData.name, "banner"),
     posts: [],
     foundedDate: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
     rules: defaultRules,
@@ -98,10 +106,10 @@ export const addPostToCommunity = (
       comments: 0,
       commentObjects: [],
       upvotes: 0,
-      time: 'Just now', // Could be formatted more nicely later
+      time: 'Just now', 
       isUpvotedByUser: false,
     };
-    community.posts.unshift(newPost); // Add to the beginning of the array
+    community.posts.unshift(newPost); 
     return newPost;
   }
   return null;
@@ -113,9 +121,9 @@ export const updateCommunityDetails = (
     name?: string;
     description?: string;
     longDescription?: string;
-    image?: string;
+    image?: string; // For icon
     imageHint?: string;
-    bannerImage?: string;
+    bannerImage?: string; // For banner
     bannerImageHint?: string;
     foundedDate?: string;
     rules?: string;
@@ -135,6 +143,7 @@ export const updateCommunityDetails = (
     }
     community.longDescription = updatedData.longDescription || updatedData.description || community.longDescription;
 
+    // Handle Icon Image (community.image)
     if (updatedData.image) {
       community.image = updatedData.image;
       if (updatedData.image.startsWith('data:image') && !updatedData.imageHint) {
@@ -142,22 +151,25 @@ export const updateCommunityDetails = (
       } else if (updatedData.imageHint) {
         community.imageHint = updatedData.imageHint;
       }
-    } else if (nameChanged && !community.image.startsWith('data:image')) { // only update if not already an AI image
+    } else if (nameChanged && !community.image.startsWith('data:image')) { 
       community.image = `https://placehold.co/400x250.png?text=${encodeURIComponent(community.name.substring(0,3))}`;
-      community.imageHint = generateHintFromName(community.name);
+      community.imageHint = generateHintFromName(community.name, "icon");
     }
 
+    // Handle Banner Image (community.bannerImage)
     if (updatedData.bannerImage) {
       community.bannerImage = updatedData.bannerImage;
       if (updatedData.bannerImage.startsWith('data:image') && !updatedData.bannerImageHint) {
-        community.bannerImageHint = "AI generated banner";
+        community.bannerImageHint = "uploaded banner"; // More specific if it came from user upload via update
       } else if (updatedData.bannerImageHint) {
         community.bannerImageHint = updatedData.bannerImageHint;
       }
-    } else if (nameChanged && (!community.bannerImage || !community.bannerImage.startsWith('data:image'))) { // only update if not already an AI image
-      community.bannerImage = `https://placehold.co/1200x400.png?text=${encodeURIComponent(community.name.substring(0,3))}`;
-      community.bannerImageHint = generateHintFromName(community.name, "banner");
+    } else if (nameChanged && (!community.bannerImage || !community.bannerImage.startsWith('data:image'))) { 
+        // Only update banner to placeholder if name changed AND it's not already a dataURI
+        community.bannerImage = `https://placehold.co/1200x400.png?text=${encodeURIComponent(community.name.substring(0,3))}`;
+        community.bannerImageHint = generateHintFromName(community.name, "banner");
     }
+
 
     if (updatedData.foundedDate) community.foundedDate = updatedData.foundedDate;
     if (updatedData.rules) community.rules = updatedData.rules;
@@ -168,7 +180,6 @@ export const updateCommunityDetails = (
   return null;
 };
 
-// Function to add a comment to a specific post within a community (client-side simulation)
 export const addCommentToPost = (
   communityId: string,
   postId: string,
@@ -187,8 +198,8 @@ export const addCommentToPost = (
         text: commentData.text,
         time: "Just now",
       };
-      post.commentObjects.unshift(newComment); // Add to the beginning
-      post.comments = post.commentObjects.length; // Update count
+      post.commentObjects.unshift(newComment); 
+      post.comments = post.commentObjects.length; 
       return newComment;
     }
   }

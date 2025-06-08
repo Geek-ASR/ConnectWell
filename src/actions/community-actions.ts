@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { 
   addCommunity as addCommunityService, 
   updateCommunityDetails as updateCommunityDetailsService, 
+  addPostToCommunity as addPostToCommunityService, // Corrected import name
   type Community,
   type PostInCommunity 
 } from '@/lib/community-service';
@@ -18,6 +19,7 @@ export interface CreateCommunityFormState {
     communityName?: string;
     communityDescription?: string;
     communityLongDescription?: string;
+    communityBannerImage?: string; 
   };
 }
 
@@ -50,6 +52,7 @@ export async function createCommunityAction(
   const name = formData.get('communityName') as string;
   const description = formData.get('communityDescription') as string;
   const longDescription = formData.get('communityLongDescription') as string || description;
+  const bannerImageFile = formData.get('communityBannerImage') as File | null;
 
   const fieldErrors: NonNullable<CreateCommunityFormState['fieldErrors']> = {};
 
@@ -63,6 +66,27 @@ export async function createCommunityAction(
     fieldErrors.communityLongDescription = 'Full details are required.';
   }
 
+  let bannerImageDataUri: string | undefined = undefined;
+  let bannerImageHint: string | undefined = undefined;
+
+  if (bannerImageFile && bannerImageFile.size > 0) {
+    if (bannerImageFile.size > 5 * 1024 * 1024) { // Max 5MB
+        fieldErrors.communityBannerImage = 'Banner image must be less than 5MB.';
+    } else if (!bannerImageFile.type.startsWith('image/')) {
+        fieldErrors.communityBannerImage = 'Invalid file type. Please upload an image.';
+    } else {
+        try {
+            const bannerImageBytes = await bannerImageFile.arrayBuffer();
+            const bannerImageBuffer = Buffer.from(bannerImageBytes);
+            bannerImageDataUri = `data:${bannerImageFile.type};base64,${bannerImageBuffer.toString('base64')}`;
+            bannerImageHint = bannerImageFile.name;
+        } catch (error) {
+            console.error("Error processing banner image:", error);
+            fieldErrors.communityBannerImage = 'Error processing banner image.';
+        }
+    }
+  }
+
 
   if (Object.keys(fieldErrors).length > 0) {
     return {
@@ -73,14 +97,17 @@ export async function createCommunityAction(
   }
 
   try {
-    let newCommunity = addCommunityService({ // Make newCommunity mutable
+    // Add community with user-provided banner (if any) and placeholder icon initially
+    let newCommunity = addCommunityService({ 
       name,
       description,
       longDescription,
+      bannerImage: bannerImageDataUri, // Pass the processed banner image
+      bannerImageHint: bannerImageHint || (bannerImageDataUri ? "uploaded banner" : undefined),
     });
 
     if (newCommunity) {
-      let iconGenerationMessage = 'Using placeholder icon.'; // Default message
+      let iconGenerationMessage = 'Using placeholder icon.'; 
       try {
         const imagePrompt = `A unique, modern, abstract icon for an online community named '${newCommunity.name}', focusing on themes of connection and support. Suitable for a small avatar.`;
         const generatedImageOutput = await generateImage({ prompt: imagePrompt });
@@ -90,30 +117,30 @@ export async function createCommunityAction(
             image: generatedImageOutput.imageDataUri,
           });
           if (updatedCommunityWithImage) {
-            newCommunity = updatedCommunityWithImage; // update the community object
+            newCommunity = updatedCommunityWithImage; 
             iconGenerationMessage = 'Icon generation successful.';
           } else {
-            console.warn(`Failed to update community ${newCommunity.id} with generated image.`);
+            console.warn(`Failed to update community ${newCommunity.id} with generated icon.`);
             iconGenerationMessage = 'Icon generation attempted, but update failed.';
           }
         } else {
-            iconGenerationMessage = 'Icon generation attempted, but no image was returned.';
+            iconGenerationMessage = 'Icon generation attempted, but no image was returned for icon.';
         }
       } catch (genError) {
-        console.error("Error generating image for community:", genError);
+        console.error("Error generating icon for community:", genError);
         iconGenerationMessage = 'Icon generation failed.';
-        // Community is still created, but with placeholder image.
       }
+      
+      const bannerMessage = bannerImageDataUri ? "Banner image uploaded." : "Using placeholder banner.";
 
       revalidatePath('/communities');
       revalidatePath('/communities/create'); 
       return { 
         success: true, 
-        message: `Community "${newCommunity.name}" created successfully! ${iconGenerationMessage}`,
+        message: `Community "${newCommunity.name}" created! ${iconGenerationMessage} ${bannerMessage}`,
         community: newCommunity 
       };
     } else {
-      // This case is unlikely to be hit with the current addCommunityService implementation
       return { success: false, message: 'Failed to create community. Please try again.' };
     }
   } catch (error) {
@@ -131,6 +158,7 @@ export async function updateCommunityAction(
   const name = formData.get('editCommunityName') as string;
   const description = formData.get('editCommunityDescription') as string;
   const longDescription = formData.get('editCommunityLongDescription') as string || description;
+  // Note: Banner image updates could be added here similarly if needed for edit form
 
   const fieldErrors: NonNullable<UpdateCommunityFormState['fieldErrors']> = {};
 
@@ -202,7 +230,7 @@ export async function createPostInCommunityAction(
   }
 
   try {
-    const newPost = addPostToCommunityService(communityId, {
+    const newPost = addPostToCommunityService(communityId, { // Ensure this function is correctly named and imported
       userId,
       userName,
       userAvatar: userAvatar || `https://placehold.co/40x40.png?text=${userName.substring(0,2).toUpperCase()}`,
@@ -226,4 +254,3 @@ export async function createPostInCommunityAction(
     return { success: false, message: 'An unexpected error occurred while creating the post.' };
   }
 }
-

@@ -3,7 +3,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useActionState } from "react"; // Changed from useFormState
+import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,7 +19,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
-import { ArrowLeft, PlusCircle, Loader2 } from "lucide-react";
+import { ArrowLeft, PlusCircle, Loader2, ImageUp } from "lucide-react";
 import { createCommunityAction, type CreateCommunityFormState } from '@/actions/community-actions';
 
 function SubmitButton() {
@@ -48,12 +48,13 @@ export default function CreateCommunityPage() {
   const { toast } = useToast();
 
   const initialState: CreateCommunityFormState = { success: false };
-  const [formState, formAction] = useActionState(createCommunityAction, initialState); // Changed from useFormState
+  const [formState, formAction] = useActionState(createCommunityAction, initialState);
   
-  // To keep input fields controlled if needed, or clear them after success
   const [communityName, setCommunityName] = useState("");
   const [communityDescription, setCommunityDescription] = useState("");
   const [communityLongDescription, setCommunityLongDescription] = useState("");
+  const [bannerImageFile, setBannerImageFile] = useState<File | null>(null);
+  const [bannerImagePreview, setBannerImagePreview] = useState<string | null>(null);
 
 
   useEffect(() => {
@@ -66,6 +67,13 @@ export default function CreateCommunityPage() {
       setCommunityName("");
       setCommunityDescription("");
       setCommunityLongDescription("");
+      setBannerImageFile(null);
+      setBannerImagePreview(null);
+      // Clear the file input visually (this is a bit tricky with controlled file inputs)
+      const fileInput = document.getElementById('communityBannerImage') as HTMLInputElement;
+      if (fileInput) {
+        fileInput.value = "";
+      }
       router.push("/communities");
     } else if (formState?.message && !formState.success) {
       toast({
@@ -75,6 +83,21 @@ export default function CreateCommunityPage() {
       });
     }
   }, [formState, router, toast]);
+
+  const handleBannerImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setBannerImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setBannerImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setBannerImageFile(null);
+      setBannerImagePreview(null);
+    }
+  };
 
   return (
     <div className="space-y-8 max-w-2xl mx-auto">
@@ -93,7 +116,7 @@ export default function CreateCommunityPage() {
           <CardHeader>
             <CardTitle>Community Details</CardTitle>
             <CardDescription>
-              Give your community a meaningful name and describe its purpose.
+              Give your community a meaningful name, description, and an optional banner image.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -143,6 +166,25 @@ export default function CreateCommunityPage() {
                 <p className="text-sm text-destructive">{formState.fieldErrors.communityLongDescription}</p>
               )}
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="communityBannerImage">Community Banner Image (Optional)</Label>
+              <Input
+                id="communityBannerImage"
+                name="communityBannerImage"
+                type="file"
+                accept="image/*"
+                onChange={handleBannerImageChange}
+                className="text-base file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
+              />
+              {bannerImagePreview && (
+                <div className="mt-2 relative aspect-[16/9] w-full max-w-md rounded-md overflow-hidden border">
+                  <img src={bannerImagePreview} alt="Banner preview" className="object-cover w-full h-full" />
+                </div>
+              )}
+              {formState?.fieldErrors?.communityBannerImage && (
+                <p className="text-sm text-destructive">{formState.fieldErrors.communityBannerImage}</p>
+              )}
+            </div>
           </CardContent>
           <CardFooter className="flex justify-end gap-2 pt-6">
             <Button variant="outline" asChild>
@@ -155,5 +197,3 @@ export default function CreateCommunityPage() {
     </div>
   );
 }
-
-    
