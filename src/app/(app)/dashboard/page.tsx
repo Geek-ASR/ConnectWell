@@ -49,6 +49,10 @@ import {
   HeartHandshake,
   HeartPulse,
   Baby,
+  Info,
+  FileText,
+  Shield,
+  FileBadge,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -170,7 +174,7 @@ const initialFeedItems: FeedItem[] = [
 const spaces: SpaceItem[] = [
   { name: "Medical Research", icon: FlaskConical, href: "/medical-research" },
   { name: "Mental Wellness", icon: Lightbulb, href: "/mental-wellness" },
-  { name: "Chronic Illness Support", icon: Users, href: "/chronic-illness" },
+  { name: "Chronic Illness Support", icon: Users, href: "/chronic-illness" }, // Changed from HeartHandshake for dashboard specific context
   { name: "Fitness & Recovery", icon: HeartPulse, href: "/fitness-recovery" }, 
   { name: "Pediatric Health", icon: Baby, href: "/pediatric-health" },
 ];
@@ -216,7 +220,6 @@ const DashboardSpacesSidebarContent = () => {
           </Button>
         ))}
       </div>
-      {/* Informational links moved to main app layout sidebar */}
     </div>
   );
 };
@@ -385,25 +388,6 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen">
-      <div className="lg:hidden p-4 border-b border-border/50">
-        <Sheet open={isMobileSpacesOpen} onOpenChange={setIsMobileSpacesOpen}>
-          <SheetTrigger asChild>
-            <Button variant="outline" className="w-full sm:w-auto">
-              <LayoutGrid className="mr-2 h-5 w-5" />
-              Spaces & Options
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="left" className="w-[300px] flex flex-col p-0">
-            <SheetHeader className="p-4 border-b border-border/50">
-              <SheetTitle>Menu</SheetTitle>
-            </SheetHeader>
-            <div className="flex-grow overflow-y-auto">
-              <DashboardSpacesSidebarContent />
-            </div>
-          </SheetContent>
-        </Sheet>
-      </div>
-
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-x-6 xl:gap-x-8">
         <aside className="hidden lg:block lg:col-span-3 xl:col-span-2 sticky top-16 h-[calc(100vh-4rem)]">
            <div className="h-full overflow-y-auto">
