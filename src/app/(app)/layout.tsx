@@ -15,7 +15,7 @@ import {
   SidebarFooter,
   SidebarTrigger,
   SidebarInset,
-  SidebarSeparator, // Added SidebarSeparator
+  SidebarSeparator, 
 } from "@/components/ui/sidebar";
 import { UserNav } from "@/components/auth/UserNav";
 import Link from "next/link";
@@ -30,11 +30,11 @@ import {
   Lightbulb, 
   HeartPulse, 
   Baby,
-  Info,        // Added Info icon
-  Briefcase,   // Added Briefcase icon
-  FileText,    // Added FileText icon
-  Shield,      // Added Shield icon
-  FileBadge    // Added FileBadge icon (or Gavel if preferred)
+  Info,       
+  Briefcase,  
+  FileText,   
+  Shield,     
+  FileBadge   
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -104,7 +104,7 @@ export default function AppLayout({
               <SidebarMenuItem key={item.label}>
                 <SidebarMenuButton
                   asChild
-                  isActive={pathname === item.href || (item.href !== "/dashboard" && item.href !== "/" && pathname.startsWith(item.href))} 
+                  isActive={pathname === item.href || (item.href !== "/dashboard" && item.href !== "/" && pathname.startsWith(item.href) && item.href.length > 1)} 
                   tooltip={item.label}
                   disabled={item.disabled}
                 >
@@ -116,29 +116,28 @@ export default function AppLayout({
               </SidebarMenuItem>
             ))}
           </SidebarMenu>
-          <SidebarSeparator className="my-2" />
-          <SidebarMenu>
-            {informationalNavItems.map((item) => (
-              <SidebarMenuItem key={item.label}>
-                <SidebarMenuButton
-                  asChild
-                  // For informational pages, direct match is usually fine, or no active state
-                  isActive={pathname === item.href}
-                  tooltip={item.label}
-                  variant="ghost" // Using ghost for a slightly different feel for these links
-                  className="text-sidebar-foreground/70 hover:text-sidebar-foreground"
-                >
-                  <Link href={item.href}>
-                    <item.icon />
-                    <span>{item.label}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))}
-          </SidebarMenu>
         </SidebarContent>
         <SidebarFooter className="p-4 border-t border-sidebar-border">
-            <Button variant="ghost" onClick={logout} className="w-full justify-start group-data-[collapsible=icon]:justify-center">
+            <SidebarMenu className="mb-2">
+                {informationalNavItems.map((item) => (
+                <SidebarMenuItem key={item.label}>
+                    <SidebarMenuButton
+                    asChild
+                    isActive={pathname === item.href}
+                    tooltip={item.label}
+                    variant="ghost" 
+                    className="text-sidebar-foreground/70 hover:text-sidebar-foreground text-xs"
+                    >
+                    <Link href={item.href}>
+                        <item.icon className="h-3.5 w-3.5" />
+                        <span>{item.label}</span>
+                    </Link>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+                ))}
+            </SidebarMenu>
+            <SidebarSeparator className="mb-2" />
+            <Button variant="ghost" onClick={logout} className="w-full justify-start group-data-[collapsible=icon]:justify-center text-sm">
                 <LogOut className="mr-2 h-4 w-4 group-data-[collapsible=icon]:mr-0" />
                 <span className="group-data-[collapsible=icon]:hidden">Logout</span>
             </Button>
