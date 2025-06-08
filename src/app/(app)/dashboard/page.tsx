@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -46,7 +45,8 @@ import {
   UserCheck, 
   LayoutGrid, 
   FlaskConical,
-  HeartHandshake, // Added for Chronic Illness
+  HeartHandshake,
+  HeartPulse, // Added for Fitness & Recovery
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -168,8 +168,8 @@ const initialFeedItems: FeedItem[] = [
 const spaces: SpaceItem[] = [
   { name: "Medical Research", icon: FlaskConical, href: "/medical-research" },
   { name: "Mental Wellness", icon: Lightbulb, href: "/mental-wellness" },
-  { name: "Chronic Illness Support", icon: Users, href: "/chronic-illness" }, // Updated href
-  { name: "Fitness & Recovery", icon: TrendingUp, href: "#" },
+  { name: "Chronic Illness Support", icon: Users, href: "/chronic-illness" },
+  { name: "Fitness & Recovery", icon: TrendingUp, href: "/fitness-recovery" }, // Updated href
   { name: "Pediatric Health", icon: Star, href: "#" },
 ];
 
