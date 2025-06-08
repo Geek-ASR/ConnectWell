@@ -5,7 +5,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useActionState } from "react"; // Changed from useFormState
+import { useActionState } from "react"; 
 import { useFormStatus } from "react-dom";
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,7 +20,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext'; 
 import { cn } from '@/lib/utils';
 import type { Community, PostInCommunity, Comment } from '@/lib/community-service'; 
-import { getCommunityById, addCommentToPost, addPostToCommunity as addPostToCommunityService } from '@/lib/community-service'; // Added addPostToCommunityService
+import { getCommunityById, addCommentToPost } from '@/lib/community-service'; 
 import { 
   updateCommunityAction, 
   createPostInCommunityAction, 
@@ -48,7 +48,9 @@ function CreatePostSubmitButton() {
 
 
 export default function CommunityDetailPage() {
-  const params = useParams();
+  const { id: communityIdParam } = useParams() as { id?: string };
+  const communityId = communityIdParam;
+
   const router = useRouter();
   const { toast } = useToast();
   const { user } = useAuth(); 
@@ -68,17 +70,15 @@ export default function CommunityDetailPage() {
   const [newCommentText, setNewCommentText] = useState("");
 
 
-  const communityId = typeof params.id === 'string' ? params.id : undefined;
-
   const initialEditFormState: UpdateCommunityFormState = { success: false };
   const boundUpdateCommunityAction = communityId ? updateCommunityAction.bind(null, communityId) : null;
-  const [editFormState, editFormAction] = useActionState( // Changed from useFormState
+  const [editFormState, editFormAction] = useActionState( 
     boundUpdateCommunityAction || (() => Promise.resolve(initialEditFormState)), 
     initialEditFormState
   );
 
   const initialCreatePostFormState: CreatePostInCommunityFormState = { success: false };
-  const [createPostFormState, formActionCreatePost] = useActionState(createPostInCommunityAction, initialCreatePostFormState); // Changed from useFormState
+  const [createPostFormState, formActionCreatePost] = useActionState(createPostInCommunityAction, initialCreatePostFormState); 
 
   useEffect(() => {
     if (communityId) {
@@ -623,6 +623,8 @@ export default function CommunityDetailPage() {
   );
 }
 
+
+    
 
     
 
