@@ -3,7 +3,8 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useFormState, useFormStatus } from "react-dom";
+import { useActionState } from "react"; // Changed from useFormState
+import { useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -47,7 +48,7 @@ export default function CreateCommunityPage() {
   const { toast } = useToast();
 
   const initialState: CreateCommunityFormState = { success: false };
-  const [formState, formAction] = useFormState(createCommunityAction, initialState);
+  const [formState, formAction] = useActionState(createCommunityAction, initialState); // Changed from useFormState
   
   // To keep input fields controlled if needed, or clear them after success
   const [communityName, setCommunityName] = useState("");
@@ -154,3 +155,5 @@ export default function CreateCommunityPage() {
     </div>
   );
 }
+
+    
