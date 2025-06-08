@@ -15,10 +15,27 @@ import {
   SidebarFooter,
   SidebarTrigger,
   SidebarInset,
+  SidebarSeparator, // Added SidebarSeparator
 } from "@/components/ui/sidebar";
 import { UserNav } from "@/components/auth/UserNav";
 import Link from "next/link";
-import { LayoutDashboard, Users, UserCircle2, Settings, HeartHandshake, LogOut, FlaskConical, Lightbulb, HeartPulse, Baby } from "lucide-react";
+import { 
+  LayoutDashboard, 
+  Users, 
+  UserCircle2, 
+  Settings, 
+  HeartHandshake, 
+  LogOut, 
+  FlaskConical, 
+  Lightbulb, 
+  HeartPulse, 
+  Baby,
+  Info,        // Added Info icon
+  Briefcase,   // Added Briefcase icon
+  FileText,    // Added FileText icon
+  Shield,      // Added Shield icon
+  FileBadge    // Added FileBadge icon (or Gavel if preferred)
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -52,16 +69,24 @@ export default function AppLayout({
     return null; 
   }
   
-  const sidebarNavItems = [
+  const mainNavItems = [
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { href: "/communities", label: "Communities", icon: Users },
     { href: "/medical-research", label: "Medical Research", icon: FlaskConical },
     { href: "/mental-wellness", label: "Mental Wellness", icon: Lightbulb },
-    { href: "/chronic-illness", label: "Chronic Illness", icon: HeartHandshake }, // Changed icon for variety
+    { href: "/chronic-illness", label: "Chronic Illness", icon: HeartHandshake },
     { href: "/fitness-recovery", label: "Fitness & Recovery", icon: HeartPulse },
     { href: "/pediatric-health", label: "Pediatric Health", icon: Baby },
     { href: "/profile", label: "My Profile", icon: UserCircle2 },
     { href: "/settings", label: "Settings", icon: Settings, disabled: true },
+  ];
+
+  const informationalNavItems = [
+    { href: "/about", label: "About", icon: Info },
+    { href: "/careers", label: "Careers", icon: Briefcase },
+    { href: "/terms", label: "Terms of Service", icon: FileText },
+    { href: "/privacy", label: "Privacy Policy", icon: Shield },
+    { href: "/acceptable-use", label: "Acceptable Use", icon: FileBadge },
   ];
 
   return (
@@ -75,13 +100,33 @@ export default function AppLayout({
         </SidebarHeader>
         <SidebarContent>
           <SidebarMenu>
-            {sidebarNavItems.map((item) => (
+            {mainNavItems.map((item) => (
               <SidebarMenuItem key={item.label}>
                 <SidebarMenuButton
                   asChild
-                  isActive={pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href))} 
+                  isActive={pathname === item.href || (item.href !== "/dashboard" && item.href !== "/" && pathname.startsWith(item.href))} 
                   tooltip={item.label}
                   disabled={item.disabled}
+                >
+                  <Link href={item.href}>
+                    <item.icon />
+                    <span>{item.label}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            ))}
+          </SidebarMenu>
+          <SidebarSeparator className="my-2" />
+          <SidebarMenu>
+            {informationalNavItems.map((item) => (
+              <SidebarMenuItem key={item.label}>
+                <SidebarMenuButton
+                  asChild
+                  // For informational pages, direct match is usually fine, or no active state
+                  isActive={pathname === item.href}
+                  tooltip={item.label}
+                  variant="ghost" // Using ghost for a slightly different feel for these links
+                  className="text-sidebar-foreground/70 hover:text-sidebar-foreground"
                 >
                   <Link href={item.href}>
                     <item.icon />
