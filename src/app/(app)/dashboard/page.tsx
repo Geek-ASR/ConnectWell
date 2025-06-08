@@ -45,6 +45,7 @@ import {
   UserPlus, 
   UserCheck, 
   LayoutGrid, 
+  FlaskConical, // Added FlaskConical
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -164,7 +165,7 @@ const initialFeedItems: FeedItem[] = [
 ];
 
 const spaces: SpaceItem[] = [
-  { name: "Medical Research", icon: Briefcase, href: "#" },
+  { name: "Medical Research", icon: FlaskConical, href: "/medical-research" }, // Updated href and icon
   { name: "Mental Wellness", icon: Lightbulb, href: "#" },
   { name: "Chronic Illness Support", icon: Users, href: "#" },
   { name: "Fitness & Recovery", icon: TrendingUp, href: "#" },
@@ -630,4 +631,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
