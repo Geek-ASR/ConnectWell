@@ -28,22 +28,3 @@ export function Footer() {
   );
 }
 
-// Placeholder pages for legal links
-export function PrivacyPolicyPage() {
-  return (
-    <div className="container mx-auto py-12">
-      <h1 className="text-3xl font-bold">Privacy Policy</h1>
-      <p className="mt-4 text-muted-foreground">Content for Privacy Policy page...</p>
-    </div>
-  );
-}
-
-export function TermsOfServicePage() {
-  return (
-    <div className="container mx-auto py-12">
-      <h1 className="text-3xl font-bold">Terms of Service</h1>
-      <p className="mt-4 text-muted-foreground">Content for Terms of Service page...</p>
-    </div>
-  );
-}
-

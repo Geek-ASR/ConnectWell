@@ -48,7 +48,7 @@ import {
   FlaskConical,
   HeartHandshake,
   HeartPulse,
-  Baby, // Added for Pediatric Health
+  Baby,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -170,7 +170,7 @@ const initialFeedItems: FeedItem[] = [
 const spaces: SpaceItem[] = [
   { name: "Medical Research", icon: FlaskConical, href: "/medical-research" },
   { name: "Mental Wellness", icon: Lightbulb, href: "/mental-wellness" },
-  { name: "Chronic Illness Support", icon: Users, href: "/chronic-illness" },
+  { name: "Chronic Illness Support", icon: Users, href: "/chronic-illness" }, // Users icon can be used for general community
   { name: "Fitness & Recovery", icon: HeartPulse, href: "/fitness-recovery" }, 
   { name: "Pediatric Health", icon: Baby, href: "/pediatric-health" },
 ];
@@ -218,11 +218,11 @@ const DashboardSpacesSidebarContent = () => {
       </div>
       <div className="p-4 mt-auto border-t border-border/50">
         <div className="space-y-1 text-xs text-muted-foreground">
-          <Link href="#" className="hover:underline block">About</Link>
-          <Link href="#" className="hover:underline block">Careers</Link>
-          <Link href="#" className="hover:underline block">Terms</Link>
-          <Link href="#" className="hover:underline block">Privacy</Link>
-          <Link href="#" className="hover:underline block">Acceptable Use</Link>
+          <Link href="/about" className="hover:underline block">About</Link>
+          <Link href="/careers" className="hover:underline block">Careers</Link>
+          <Link href="/terms" className="hover:underline block">Terms</Link>
+          <Link href="/privacy" className="hover:underline block">Privacy</Link>
+          <Link href="/acceptable-use" className="hover:underline block">Acceptable Use</Link>
         </div>
       </div>
     </div>
@@ -629,3 +629,4 @@ export default function DashboardPage() {
     </div>
   );
 }
+
