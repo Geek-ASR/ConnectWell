@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -46,7 +47,8 @@ import {
   LayoutGrid, 
   FlaskConical,
   HeartHandshake,
-  HeartPulse, // Added for Fitness & Recovery
+  HeartPulse,
+  Baby, // Added for Pediatric Health
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -169,8 +171,8 @@ const spaces: SpaceItem[] = [
   { name: "Medical Research", icon: FlaskConical, href: "/medical-research" },
   { name: "Mental Wellness", icon: Lightbulb, href: "/mental-wellness" },
   { name: "Chronic Illness Support", icon: Users, href: "/chronic-illness" },
-  { name: "Fitness & Recovery", icon: TrendingUp, href: "/fitness-recovery" }, // Updated href
-  { name: "Pediatric Health", icon: Star, href: "#" },
+  { name: "Fitness & Recovery", icon: HeartPulse, href: "/fitness-recovery" }, 
+  { name: "Pediatric Health", icon: Baby, href: "/pediatric-health" },
 ];
 
 const ads: AdItem[] = [

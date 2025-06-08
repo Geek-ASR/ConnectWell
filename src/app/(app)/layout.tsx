@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useEffect } from "react";
@@ -17,7 +18,7 @@ import {
 } from "@/components/ui/sidebar";
 import { UserNav } from "@/components/auth/UserNav";
 import Link from "next/link";
-import { LayoutDashboard, Users, UserCircle2, Settings, HeartHandshake, LogOut, FlaskConical, Lightbulb, HeartPulse } from "lucide-react";
+import { LayoutDashboard, Users, UserCircle2, Settings, HeartHandshake, LogOut, FlaskConical, Lightbulb, HeartPulse, Baby } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -56,8 +57,9 @@ export default function AppLayout({
     { href: "/communities", label: "Communities", icon: Users },
     { href: "/medical-research", label: "Medical Research", icon: FlaskConical },
     { href: "/mental-wellness", label: "Mental Wellness", icon: Lightbulb },
-    { href: "/chronic-illness", label: "Chronic Illness", icon: Users },
+    { href: "/chronic-illness", label: "Chronic Illness", icon: HeartHandshake }, // Changed icon for variety
     { href: "/fitness-recovery", label: "Fitness & Recovery", icon: HeartPulse },
+    { href: "/pediatric-health", label: "Pediatric Health", icon: Baby },
     { href: "/profile", label: "My Profile", icon: UserCircle2 },
     { href: "/settings", label: "Settings", icon: Settings, disabled: true },
   ];
