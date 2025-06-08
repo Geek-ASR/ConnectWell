@@ -24,7 +24,7 @@ import {
   FilePlus2,
   Globe,
   Image as ImageIcon,
-  Lightbulb, // Already imported
+  Lightbulb, 
   Link as LinkIcon,
   List,
   MessageCircle,
@@ -46,6 +46,7 @@ import {
   UserCheck, 
   LayoutGrid, 
   FlaskConical,
+  HeartHandshake, // Added for Chronic Illness
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -166,8 +167,8 @@ const initialFeedItems: FeedItem[] = [
 
 const spaces: SpaceItem[] = [
   { name: "Medical Research", icon: FlaskConical, href: "/medical-research" },
-  { name: "Mental Wellness", icon: Lightbulb, href: "/mental-wellness" }, // Updated href
-  { name: "Chronic Illness Support", icon: Users, href: "#" },
+  { name: "Mental Wellness", icon: Lightbulb, href: "/mental-wellness" },
+  { name: "Chronic Illness Support", icon: Users, href: "/chronic-illness" }, // Updated href
   { name: "Fitness & Recovery", icon: TrendingUp, href: "#" },
   { name: "Pediatric Health", icon: Star, href: "#" },
 ];
