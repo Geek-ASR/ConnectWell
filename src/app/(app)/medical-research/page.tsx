@@ -8,29 +8,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowRight, BookOpen, FileText, Lightbulb, Link as LinkIcon, Search, Zap } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-
-const featuredResearch = [
-  {
-    id: 'fr1',
-    title: 'Breakthrough in Alzheimer\'s Early Detection Methods',
-    source: 'Journal of Neuroscience, Vol. 42',
-    date: 'October 2024',
-    summary: 'A new imaging technique shows promise in identifying Alzheimer\'s biomarkers years before clinical symptoms appear...',
-    imageUrl: 'https://placehold.co/600x400.png',
-    imageHint: 'brain scan neurology',
-    link: '#',
-  },
-  {
-    id: 'fr2',
-    title: 'CRISPR Gene Editing: Advances in Treating Genetic Blood Disorders',
-    source: 'Nature Medicine, Vol. 30',
-    date: 'September 2024',
-    summary: 'Recent clinical trials demonstrate significant improvements in patients with sickle cell anemia and beta-thalassemia using CRISPR-Cas9 therapy...',
-    imageUrl: 'https://placehold.co/600x400.png',
-    imageHint: 'dna helix genetics',
-    link: '#',
-  },
-];
+import { featuredResearch } from '@/lib/data/research-data'; // Import data
 
 const trendingTopics = [
   { id: 'tt1', name: 'AI in Drug Discovery', icon: Lightbulb, link: '#' },
@@ -71,7 +49,7 @@ export default function MedicalResearchPage() {
         <h2 className="text-2xl font-semibold text-foreground mb-4">Featured Research</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {featuredResearch.map((item) => (
-            <Card key={item.id} className="shadow-lg hover:shadow-primary/20 transition-shadow overflow-hidden">
+            <Card key={item.id} className="shadow-lg hover:shadow-primary/20 transition-shadow overflow-hidden flex flex-col">
               <div className="relative h-48 bg-muted">
                 <Image src={item.imageUrl} alt={item.title} fill style={{ objectFit: 'cover' }} data-ai-hint={item.imageHint} />
               </div>
@@ -79,12 +57,12 @@ export default function MedicalResearchPage() {
                 <CardTitle className="text-xl">{item.title}</CardTitle>
                 <CardDescription className="text-sm">{item.source} - {item.date}</CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="flex-grow">
                 <p className="text-sm text-muted-foreground line-clamp-3">{item.summary}</p>
               </CardContent>
               <CardFooter>
                 <Button variant="link" asChild className="p-0 h-auto text-primary hover:text-primary/80">
-                  <Link href={item.link}>Read More <ArrowRight className="ml-1.5 h-4 w-4" /></Link>
+                  <Link href={`/medical-research/${item.id}`}>Read More <ArrowRight className="ml-1.5 h-4 w-4" /></Link>
                 </Button>
               </CardFooter>
             </Card>
