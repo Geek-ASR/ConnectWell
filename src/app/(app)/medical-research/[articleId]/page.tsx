@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, CalendarDays, FileTextIcon, Loader2 } from 'lucide-react';
 import { getResearchArticleById, type ResearchArticle } from '@/lib/data/research-data';
+import { cn } from '@/lib/utils'; // Added import for cn
 
 export default function MedicalResearchArticlePage() {
   const params = useParams();
@@ -92,7 +93,7 @@ export default function MedicalResearchArticlePage() {
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
           </div>
         )}
-        <CardHeader className={cn(article.imageUrl && "relative -mt-16 z-10 p-6")}>
+        <CardHeader className={cn(article.imageUrl && "relative -mt-16 md:-mt-20 z-10 p-6")}>
           <CardTitle className={cn("text-2xl md:text-3xl font-bold", article.imageUrl && "text-white shadow-lg")}>
             {article.title}
           </CardTitle>
