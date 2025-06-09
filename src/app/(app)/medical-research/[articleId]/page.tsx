@@ -7,15 +7,26 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { ArrowLeft, CalendarDays, FileTextIcon, Loader2 } from 'lucide-react';
-import { getResearchArticleById, type ResearchArticle } from '@/lib/data/research-data';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Separator } from '@/components/ui/separator';
+import { ArrowLeft, CalendarDays, FileTextIcon, Loader2, ThumbsUp, MessageCircleMore, Flag, Send } from 'lucide-react';
+import { getResearchArticleById, type ResearchArticle, type Comment } from '@/lib/data/research-data';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 
 export default function MedicalResearchArticlePage() {
   const params = useParams();
   const router = useRouter();
-  const [article, setArticle] = useState<ResearchArticle | null | undefined>(undefined); // undefined for loading, null for not found
+  const { user } = useAuth();
+  const { toast } = useToast();
+
+  const [article, setArticle] = useState<ResearchArticle | null | undefined>(undefined); 
   const [loading, setLoading] = useState(true);
+  const [newCommentText, setNewCommentText] = useState("");
+  const [isPostingComment, setIsPostingComment] = useState(false);
 
   const articleId = typeof params.articleId === 'string' ? params.articleId : null;
 
@@ -26,10 +37,74 @@ export default function MedicalResearchArticlePage() {
       setArticle(foundArticle);
       setLoading(false);
     } else {
-      setArticle(null); // No ID, so not found
+      setArticle(null); 
       setLoading(false);
     }
   }, [articleId]);
+
+  const getInitials = (name: string | null | undefined) => {
+    if (!name) return "U";
+    const names = name.split(' ');
+    if (names.length > 1) {
+      return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
+    }
+    return name.substring(0, 2).toUpperCase();
+  };
+
+  const handlePostComment = () => {
+    if (!article || !user || !newCommentText.trim()) {
+      toast({ title: "Cannot post comment", description: "Please write something or ensure you are logged in.", variant: "destructive"});
+      return;
+    }
+    setIsPostingComment(true);
+    const newCommentToAdd: Comment = {
+      id: `comment-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+      userId: user.uid,
+      userName: user.displayName || "Anonymous User",
+      userAvatar: user.photoURL || `https://placehold.co/40x40.png?text=${getInitials(user.displayName)}`,
+      userAvatarHint: "user avatar",
+      text: newCommentText.trim(),
+      time: "Just now",
+      likes: 0,
+      isLikedByUser: false,
+    };
+
+    // Simulate API call & update
+    setTimeout(() => {
+      setArticle(prevArticle => {
+        if (!prevArticle) return null;
+        const updatedComments = [newCommentToAdd, ...(prevArticle.comments || [])];
+        return { ...prevArticle, comments: updatedComments };
+      });
+      setNewCommentText("");
+      toast({ title: "Comment Posted!", description: "Your comment has been added to this article." });
+      setIsPostingComment(false);
+    }, 500);
+  };
+
+  const handleLikeComment = (commentId: string) => {
+    if (!article) return;
+    setArticle(prevArticle => {
+      if (!prevArticle) return null;
+      return {
+        ...prevArticle,
+        comments: (prevArticle.comments || []).map(comment =>
+          comment.id === commentId
+            ? { ...comment, likes: comment.isLikedByUser ? comment.likes - 1 : comment.likes + 1, isLikedByUser: !comment.isLikedByUser }
+            : comment
+        ),
+      };
+    });
+  };
+
+  const handleReplyComment = (commentId: string) => {
+    toast({ title: "Reply", description: `Replying to comment ${commentId} (feature coming soon).` });
+  };
+
+  const handleReportComment = (commentId: string) => {
+    toast({ title: "Report", description: `Comment ${commentId} reported (feature coming soon).`, variant: "default" });
+  };
+
 
   if (loading || article === undefined) {
     return (
@@ -130,12 +205,110 @@ export default function MedicalResearchArticlePage() {
             {article.summary}
           </CardDescription>
           <p className="text-sm text-muted-foreground italic">
-            Note: This is a summary of the research article. For full details, please refer to the original publication.
+            Note: This is a summary of the research article. For full details, please refer to the original publication. Comments below are user opinions and not part of the original article.
           </p>
         </CardContent>
+      </Card>
+
+      {/* Comments Section */}
+      <Card className="shadow-lg">
+        <CardHeader>
+          <CardTitle className="text-xl font-semibold">Comments ({article.comments?.length || 0})</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Add Comment Form */}
+          {user && (
+            <div className="flex items-start gap-3">
+              <Avatar className="h-10 w-10 mt-1">
+                <AvatarImage src={user.photoURL || undefined} alt={user.displayName || "User"} data-ai-hint="user avatar" />
+                <AvatarFallback>{getInitials(user.displayName)}</AvatarFallback>
+              </Avatar>
+              <div className="flex-grow space-y-2">
+                <Textarea
+                  placeholder="Share your thoughts on this article..."
+                  value={newCommentText}
+                  onChange={(e) => setNewCommentText(e.target.value)}
+                  rows={3}
+                  className="text-sm"
+                  disabled={isPostingComment}
+                />
+                <div className="flex justify-end">
+                  <Button 
+                    onClick={handlePostComment} 
+                    disabled={!newCommentText.trim() || isPostingComment}
+                    size="sm"
+                  >
+                    {isPostingComment ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
+                    {isPostingComment ? "Posting..." : "Post Comment"}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+          {!user && (
+            <p className="text-sm text-muted-foreground text-center">
+              <Link href="/login" className="text-primary hover:underline">Log in</Link> or <Link href="/signup" className="text-primary hover:underline">sign up</Link> to post a comment.
+            </p>
+          )}
+
+          <Separator />
+
+          {/* Display Comments */}
+          {(article.comments && article.comments.length > 0) ? (
+            <div className="space-y-5">
+              {article.comments.map((comment) => (
+                <div key={comment.id} className="flex items-start gap-3">
+                  <Avatar className="h-9 w-9">
+                    <AvatarImage src={comment.userAvatar} alt={comment.userName} data-ai-hint={comment.userAvatarHint} />
+                    <AvatarFallback>{getInitials(comment.userName)}</AvatarFallback>
+                  </Avatar>
+                  <div className="flex-grow p-3.5 rounded-lg bg-muted/60 border border-border/50 shadow-sm">
+                    <div className="flex items-center justify-between mb-1">
+                      <p className="text-xs font-semibold text-foreground">{comment.userName}</p>
+                      <p className="text-xs text-muted-foreground">{comment.time}</p>
+                    </div>
+                    <p className="text-sm text-foreground/80 whitespace-pre-line">{comment.text}</p>
+                    <div className="mt-2.5 pt-2 border-t border-border/70 flex items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="xs" 
+                        className={cn(
+                          "flex items-center gap-1 text-xs h-auto p-1",
+                          comment.isLikedByUser ? "text-primary hover:text-primary/90" : "text-muted-foreground hover:text-primary"
+                        )}
+                        onClick={() => handleLikeComment(comment.id)}
+                      >
+                        <ThumbsUp className={cn("h-3.5 w-3.5", comment.isLikedByUser ? "fill-primary" : "")} />
+                        {comment.likes}
+                      </Button>
+                       <Button 
+                        variant="ghost" 
+                        size="xs" 
+                        className="flex items-center gap-1 text-xs h-auto p-1 text-muted-foreground hover:text-primary"
+                        onClick={() => handleReplyComment(comment.id)}
+                      >
+                        <MessageCircleMore className="h-3.5 w-3.5" /> Reply
+                      </Button>
+                       <Button 
+                        variant="ghost" 
+                        size="xs" 
+                        className="flex items-center gap-1 text-xs h-auto p-1 text-muted-foreground hover:text-destructive"
+                        onClick={() => handleReportComment(comment.id)}
+                      >
+                        <Flag className="h-3.5 w-3.5" /> Report
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground text-center py-4">No comments yet. Be the first to share your thoughts!</p>
+          )}
+        </CardContent>
         <CardFooter>
-            <Button variant="link" className="p-0 h-auto text-primary hover:text-primary/80" onClick={() => router.back()}>
-                Go Back
+             <Button variant="link" className="p-0 h-auto text-primary hover:text-primary/80" onClick={() => router.back()}>
+                Go Back to Hub
             </Button>
         </CardFooter>
       </Card>
