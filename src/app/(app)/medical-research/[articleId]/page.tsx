@@ -6,10 +6,10 @@ import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'; // Added CardFooter
 import { ArrowLeft, CalendarDays, FileTextIcon, Loader2 } from 'lucide-react';
 import { getResearchArticleById, type ResearchArticle } from '@/lib/data/research-data';
-import { cn } from '@/lib/utils'; // Added import for cn
+import { cn } from '@/lib/utils';
 
 export default function MedicalResearchArticlePage() {
   const params = useParams();
