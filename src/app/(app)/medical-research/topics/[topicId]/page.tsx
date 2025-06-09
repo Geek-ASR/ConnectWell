@@ -28,8 +28,8 @@ export default function TrendingTopicPage() {
       const foundTopic = getTrendingTopicById(topicId);
       setTopic(foundTopic);
       if (foundTopic) {
-        const hint = foundTopic.name.toLowerCase().split(' ').slice(0, 2).join(' ') + " abstract";
-        setImageHint(hint);
+        // Use specific hint if available, otherwise generate one
+        setImageHint(foundTopic.imageHint || foundTopic.name.toLowerCase().split(' ').slice(0, 2).join(' ') + " abstract");
       }
       setLoading(false);
     } else {
@@ -75,6 +75,8 @@ export default function TrendingTopicPage() {
       </div>
     );
   }
+  
+  const leadImageUrl = topic.imageUrl || "https://placehold.co/1200x500.png";
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
@@ -90,7 +92,7 @@ export default function TrendingTopicPage() {
       <Card className="shadow-xl overflow-hidden">
         <div className="relative w-full h-64 md:h-80 bg-muted">
             <Image
-              src="https://placehold.co/1200x500.png" 
+              src={leadImageUrl}
               alt={`Image related to ${topic.name}`}
               fill
               style={{ objectFit: 'cover' }}
@@ -134,3 +136,4 @@ export default function TrendingTopicPage() {
     </div>
   );
 }
+

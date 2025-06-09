@@ -61,6 +61,8 @@ export interface TrendingTopic {
   name: string;
   icon: LucideIcon;
   details: string;
+  imageUrl?: string;
+  imageHint?: string;
 }
 
 export const trendingTopicsData: TrendingTopic[] = [
@@ -87,6 +89,8 @@ export const trendingTopicsData: TrendingTopic[] = [
     name: 'Longevity Research & Senolytics',
     icon: BookOpen,
     details: 'Longevity research seeks to understand the aging process and develop interventions to extend healthspan—the period of life spent in good health. Senolytics, drugs that selectively clear senescent (aging) cells, are a promising area of investigation. This topic explores the biology of aging, the potential of senolytics and other anti-aging strategies, and the societal implications of extending human lifespan.\n\nKey discussions involve:\n- Hallmarks of aging\n- Mechanisms of cellular senescence\n- Development and clinical trials of senolytic drugs\n- Lifestyle interventions for healthy aging (e.g., caloric restriction, exercise)',
+    imageUrl: 'https://images.unsplash.com/photo-1520607162502-acabdf08255e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxhZ2luZyUyMHJlc2VhcmNoJTIwYWJzdHJhY3R8ZW58MHx8fHwxNzE3NzA1Mjc4fDA&ixlib=rb-4.0.3&q=80&w=1080',
+    imageHint: 'aging research abstract',
   },
 ];
 
