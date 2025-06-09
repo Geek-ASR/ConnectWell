@@ -8,14 +8,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowRight, BookOpen, FileText, Lightbulb, Link as LinkIcon, Search, Zap } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { featuredResearch } from '@/lib/data/research-data'; // Import data
-
-const trendingTopics = [
-  { id: 'tt1', name: 'AI in Drug Discovery', icon: Lightbulb, link: '#' },
-  { id: 'tt2', name: 'Personalized Oncology', icon: Zap, link: '#' },
-  { id: 'tt3', name: 'Microbiome and Mental Health', icon: FileText, link: '#' },
-  { id: 'tt4', name: 'Longevity Research & Senolytics', icon: BookOpen, link: '#' },
-];
+import { featuredResearch, trendingTopicsData } from '@/lib/data/research-data'; // Import data
 
 const helpfulResources = [
   { id: 'hr1', name: 'PubMed Central (PMC)', description: 'Free full-text archive of biomedical and life sciences literature.', link: 'https://www.ncbi.nlm.nih.gov/pmc/' },
@@ -73,13 +66,13 @@ export default function MedicalResearchPage() {
       <section>
         <h2 className="text-2xl font-semibold text-foreground mb-4">Trending Topics</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {trendingTopics.map((topic) => (
+          {trendingTopicsData.map((topic) => (
             <Card key={topic.id} className="shadow-md hover:shadow-accent/20 transition-shadow">
               <CardContent className="pt-6 flex flex-col items-center text-center">
                 <topic.icon className="h-10 w-10 text-accent mb-3" />
                 <h3 className="font-semibold text-md text-foreground mb-1">{topic.name}</h3>
                 <Button variant="ghost" size="sm" asChild className="text-accent hover:text-accent/80">
-                  <Link href={topic.link}>Explore Topic</Link>
+                  <Link href={`/medical-research/topics/${topic.id}`}>Explore Topic</Link>
                 </Button>
               </CardContent>
             </Card>

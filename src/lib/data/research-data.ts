@@ -1,4 +1,7 @@
 
+import type { LucideIcon } from 'lucide-react';
+import { Lightbulb, Zap, FileText, BookOpen } from 'lucide-react';
+
 export interface Comment {
   id: string;
   userId: string;
@@ -50,4 +53,43 @@ export const getResearchArticleById = (id: string): ResearchArticle | undefined 
   // Create a deep copy to avoid modifying the original data if comments are added client-side
   const article = featuredResearch.find(article => article.id === id);
   return article ? JSON.parse(JSON.stringify(article)) : undefined;
+};
+
+
+export interface TrendingTopic {
+  id: string;
+  name: string;
+  icon: LucideIcon;
+  details: string;
+}
+
+export const trendingTopicsData: TrendingTopic[] = [
+  {
+    id: 'tt1',
+    name: 'AI in Drug Discovery',
+    icon: Lightbulb,
+    details: 'Artificial Intelligence (AI) is revolutionizing the field of drug discovery by accelerating research, reducing costs, and improving the success rate of new therapies. AI algorithms can analyze vast datasets to identify potential drug candidates, predict their efficacy and side effects, and optimize clinical trial designs. This topic explores the latest AI models, success stories, and ethical considerations in AI-driven pharmaceutical research.\n\nKey areas include:\n- Machine learning for target identification\n- Generative AI for novel molecule design\n- Predictive modeling for clinical trial outcomes\n- AI in repurposing existing drugs',
+  },
+  {
+    id: 'tt2',
+    name: 'Personalized Oncology',
+    icon: Zap,
+    details: 'Personalized oncology aims to tailor cancer treatment to the individual characteristics of each patient and their tumor. By analyzing genomic, proteomic, and other molecular data, clinicians can select therapies that are most likely to be effective while minimizing toxicity. This section delves into advancements in targeted therapies, immunotherapy, liquid biopsies, and the challenges of implementing personalized medicine in routine cancer care.\n\nFocus points:\n- Genomic profiling and biomarker discovery\n- Advances in immunotherapy (e.g., CAR T-cell therapy)\n- Liquid biopsies for early detection and monitoring\n- Ethical and economic aspects of personalized cancer care',
+  },
+  {
+    id: 'tt3',
+    name: 'Microbiome and Mental Health',
+    icon: FileText,
+    details: 'The gut microbiome, the complex community of microorganisms residing in our digestive tract, is increasingly recognized for its profound impact on brain function and mental health. Research is uncovering links between microbiome dysbiosis and conditions like depression, anxiety, and neurodevelopmental disorders. This topic covers the gut-brain axis, the role of probiotics and prebiotics, and emerging therapeutic strategies targeting the microbiome for mental well-being.\n\nTopics of interest:\n- The gut-brain axis communication pathways\n- Impact of diet and lifestyle on the microbiome\n- Probiotics, prebiotics, and psychobiotics\n- Fecal microbiota transplantation (FMT) in mental health',
+  },
+  {
+    id: 'tt4',
+    name: 'Longevity Research & Senolytics',
+    icon: BookOpen,
+    details: 'Longevity research seeks to understand the aging process and develop interventions to extend healthspan—the period of life spent in good health. Senolytics, drugs that selectively clear senescent (aging) cells, are a promising area of investigation. This topic explores the biology of aging, the potential of senolytics and other anti-aging strategies, and the societal implications of extending human lifespan.\n\nKey discussions involve:\n- Hallmarks of aging\n- Mechanisms of cellular senescence\n- Development and clinical trials of senolytic drugs\n- Lifestyle interventions for healthy aging (e.g., caloric restriction, exercise)',
+  },
+];
+
+export const getTrendingTopicById = (id: string): TrendingTopic | undefined => {
+  return trendingTopicsData.find(topic => topic.id === id);
 };
