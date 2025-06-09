@@ -80,7 +80,7 @@ export default function MedicalResearchArticlePage() {
       </div>
 
       <Card className="shadow-xl overflow-hidden">
-        {article.imageUrl && (
+        {article.imageUrl ? (
           <div className="relative h-64 md:h-80 bg-muted">
             <Image
               src={article.imageUrl}
@@ -91,24 +91,41 @@ export default function MedicalResearchArticlePage() {
               priority
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+            <div className="absolute bottom-0 left-0 right-0 z-10 p-6">
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-50">
+                {article.title}
+              </h2>
+              <div className="text-sm mt-2 flex flex-col sm:flex-row sm:items-center gap-x-4 gap-y-1 text-gray-300">
+                <div className="flex items-center">
+                  <FileTextIcon className="mr-1.5 h-4 w-4" />
+                  <span>Source: {article.source}</span>
+                </div>
+                <div className="flex items-center">
+                  <CalendarDays className="mr-1.5 h-4 w-4" />
+                  <span>Published: {article.date}</span>
+                </div>
+              </div>
+            </div>
           </div>
+        ) : (
+          <CardHeader className="p-6">
+            <CardTitle className="text-2xl md:text-3xl font-bold text-foreground">
+              {article.title}
+            </CardTitle>
+            <div className="text-sm mt-2 flex flex-col sm:flex-row sm:items-center gap-x-4 gap-y-1 text-muted-foreground">
+              <div className="flex items-center">
+                <FileTextIcon className="mr-1.5 h-4 w-4" />
+                <span>Source: {article.source}</span>
+              </div>
+              <div className="flex items-center">
+                <CalendarDays className="mr-1.5 h-4 w-4" />
+                <span>Published: {article.date}</span>
+              </div>
+            </div>
+          </CardHeader>
         )}
-        <CardHeader className={cn("p-6", article.imageUrl && "relative -mt-16 md:-mt-20 z-10")}>
-          <CardTitle className={cn("text-2xl md:text-3xl font-bold", article.imageUrl ? "text-gray-50" : "text-foreground")}>
-            {article.title}
-          </CardTitle>
-          <div className={cn("text-sm mt-2 flex flex-col sm:flex-row sm:items-center gap-x-4 gap-y-1", article.imageUrl ? "text-gray-300" : "text-muted-foreground")}>
-            <div className="flex items-center">
-              <FileTextIcon className="mr-1.5 h-4 w-4" />
-              <span>Source: {article.source}</span>
-            </div>
-            <div className="flex items-center">
-              <CalendarDays className="mr-1.5 h-4 w-4" />
-              <span>Published: {article.date}</span>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="p-6 pt-0 space-y-4">
+
+        <CardContent className="p-6 space-y-4">
           <CardDescription className="text-base md:text-lg text-foreground/90 leading-relaxed whitespace-pre-line">
             {article.summary}
           </CardDescription>
