@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from 'react';
@@ -13,7 +14,7 @@ const featuredWorkouts = [
     title: 'Full Body Strength Blast',
     category: 'Strength Training',
     summary: 'A comprehensive workout targeting all major muscle groups for balanced strength development.',
-    imageUrl: 'https://placehold.co/600x400.png',
+    imageUrl: 'https://images.unsplash.com/photo-1513352098199-8ccf457b35a8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxwZXJzb24lMjBsaWZ0aW5nJTIwd2VpZ2h0cyUyMGd5bXxlbnwwfHx8fDE3NDk0OTIyMjR8MA&ixlib=rb-4.1.0&q=80&w=1080',
     imageHint: 'person lifting weights gym',
     link: '#', // Placeholder link
     icon: Dumbbell,
@@ -23,7 +24,7 @@ const featuredWorkouts = [
     title: 'Cardio Endurance Challenge',
     category: 'Cardiovascular Health',
     summary: 'Boost your heart health and stamina with this invigorating cardio routine.',
-    imageUrl: 'https://placehold.co/600x400.png',
+    imageUrl: 'https://images.unsplash.com/photo-1532660954873-8c3f937e6871?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxwZXJzb24lMjBydW5uaW5nJTIwdHJhY2t8ZW58MHx8fHwxNzQ5NDkyMjI0fDA&ixlib=rb-4.1.0&q=80&w=1080',
     imageHint: 'person running track',
     link: '#', // Placeholder link
     icon: Zap,
@@ -48,7 +49,7 @@ export default function FitnessRecoveryPage() {
       <Card className="shadow-xl border-border/50 overflow-hidden">
         <div className="relative h-56 md:h-72 bg-gradient-to-br from-primary/70 via-accent/50 to-secondary/60">
           <Image 
-            src="https://placehold.co/1200x400.png" 
+            src="https://images.unsplash.com/photo-1542533450-52ccfdc39aba?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8Zml0bmVzcyUyMHN1bnJpc2UlMjBzaWxob3VldHRlfGVufDB8fHx8MTc0OTQ5MjIyM3ww&ixlib=rb-4.1.0&q=80&w=1080" 
             alt="Dynamic fitness imagery - e.g., silhouette of a person stretching at sunrise"
             fill
             style={{ objectFit: 'cover' }}
