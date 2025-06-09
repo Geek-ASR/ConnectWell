@@ -33,7 +33,7 @@ export const featuredResearch: ResearchArticle[] = [
     source: 'Journal of Neuroscience, Vol. 42',
     date: 'October 2024',
     summary: 'A new imaging technique shows promise in identifying Alzheimer\'s biomarkers years before clinical symptoms appear. This could revolutionize early diagnosis and intervention strategies, offering hope for millions affected by the disease. The study involved a multi-center trial with over 500 participants and demonstrated high sensitivity and specificity.',
-    imageUrl: 'https://placehold.co/600x400.png',
+    imageUrl: 'https://images.unsplash.com/photo-1558284924-48ee23778f83?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMnx8YWx6aGVpbWVyfGVufDB8fHx8MTc0OTQ5MTgwMXww&ixlib=rb-4.1.0&q=80&w=1080',
     imageHint: 'brain scan neurology',
     comments: [],
   },
@@ -93,3 +93,4 @@ export const trendingTopicsData: TrendingTopic[] = [
 export const getTrendingTopicById = (id: string): TrendingTopic | undefined => {
   return trendingTopicsData.find(topic => topic.id === id);
 };
+
