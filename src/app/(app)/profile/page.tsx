@@ -50,14 +50,21 @@ export default function ProfilePage() {
     );
   }
 
+  const newBannerUrl = "https://images.unsplash.com/photo-1580133318324-f2f76d987dd8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxhYnN0cmFjdCUyMG5hdHVyZXxlbnwwfHx8fDE3NDk0OTIzNjJ8MA&ixlib=rb-4.1.0&q=80&w=1080";
+  const newAvatarUrl = "https://images.unsplash.com/photo-1502823403499-6ccfcf4fb453?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHx1c2VyJTIwcG9ydHJhaXR8ZW58MHx8fHwxNzQ5NDkyMzYxfDA&ixlib=rb-4.1.0&q=80&w=1080";
+  
+  const currentPhotoUrlIsPlaceholder = user.photoURL?.includes("placehold.co");
+  const avatarSrc = currentPhotoUrlIsPlaceholder || !user.photoURL ? newAvatarUrl : user.photoURL;
+
+
   return (
     <div className="space-y-8">
       <Card className="shadow-lg overflow-hidden">
         <div className="relative h-48 bg-gradient-to-r from-primary to-accent">
-           <Image src="https://placehold.co/1200x300.png" alt="Profile banner" fill objectFit="cover" data-ai-hint="abstract nature" />
+           <Image src={newBannerUrl} alt="Profile banner" fill style={{objectFit:"cover"}} data-ai-hint="abstract nature" />
           <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2">
             <Avatar className="h-32 w-32 border-4 border-background shadow-lg">
-              <AvatarImage src={user.photoURL ?? undefined} alt={user.displayName ?? "User"} data-ai-hint="user portrait"/>
+              <AvatarImage src={avatarSrc} alt={user.displayName ?? "User"} data-ai-hint="user portrait"/>
               <AvatarFallback className="text-4xl">{getInitials(user.displayName)}</AvatarFallback>
             </Avatar>
           </div>
