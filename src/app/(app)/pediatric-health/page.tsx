@@ -14,7 +14,7 @@ const featuredArticles = [
     title: 'Understanding Your Newborn: A Guide for New Parents',
     category: 'Parenting Tips',
     summary: 'Navigate the first few months with your baby, covering feeding, sleeping, and common concerns.',
-    imageUrl: 'https://placehold.co/600x400.png',
+    imageUrl: 'https://images.unsplash.com/photo-1545177251-f63921bd2b2a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8bmV3Ym9ybiUyMGJhYnklMjBwYXJlbnR8ZW58MHx8fHwxNzQ5NDkyMjg0fDA&ixlib=rb-4.1.0&q=80&w=1080',
     imageHint: 'newborn baby parent',
     link: '#', // Placeholder link
     icon: Baby,
@@ -24,7 +24,7 @@ const featuredArticles = [
     title: 'Vaccination Schedules: Keeping Your Child Protected',
     category: 'Health Information',
     summary: 'An overview of recommended vaccination schedules and the importance of timely immunizations.',
-    imageUrl: 'https://placehold.co/600x400.png',
+    imageUrl: 'https://images.unsplash.com/photo-1576766125468-a5d48274c5b4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxjaGlsZCUyMHZhY2NpbmF0aW9uJTIwZG9jdG9yfGVufDB8fHx8MTc0OTQ5MjI4NHww&ixlib=rb-4.1.0&q=80&w=1080',
     imageHint: 'child vaccination doctor',
     link: '#', // Placeholder link
     icon: ShieldCheck,
@@ -49,7 +49,7 @@ export default function PediatricHealthPage() {
       <Card className="shadow-xl border-border/50 overflow-hidden">
         <div className="relative h-56 md:h-72 bg-gradient-to-br from-primary/60 via-accent/40 to-secondary/50">
           <Image 
-            src="https://placehold.co/1200x400.png" 
+            src="https://images.unsplash.com/photo-1505155485412-30b3a45080ec?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxjaGlsZHJlbiUyMHBsYXlpbmclMjB2aWJyYW50fGVufDB8fHx8MTc0OTQ5MjI4NHww&ixlib=rb-4.1.0&q=80&w=1080" 
             alt="Happy children playing or abstract child-friendly design"
             fill
             style={{ objectFit: 'cover' }}
@@ -141,3 +141,4 @@ export default function PediatricHealthPage() {
     </div>
   );
 }
+
