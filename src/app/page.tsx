@@ -89,17 +89,18 @@ export default function HomePage() {
                 />
               </div>
             </div>
-
-            <div 
-              className={cn(
-                "absolute bottom-8 left-1/2 -translate-x-1/2 opacity-0", 
-                heroAnimated && "animate-fadeInUp"
-              )}
-              style={{ animationDelay: '1.2s' }}
-            >
-              <ChevronDown className="h-8 w-8 text-muted-foreground animate-scroll-indicator-bounce" />
-            </div>
           </div>
+            
+          <div 
+            className={cn(
+              "absolute bottom-8 left-1/2 -translate-x-1/2 opacity-0 z-10", 
+              heroAnimated && "animate-fadeInUp"
+            )}
+            style={{ animationDelay: '1.2s' }}
+          >
+            <ChevronDown className="h-8 w-8 text-muted-foreground animate-scroll-indicator-bounce" />
+          </div>
+
            {/* Fade-out overlay at the bottom of the hero section */}
           <div className="absolute bottom-0 left-0 right-0 h-32 md:h-48 bg-gradient-to-t from-background/50 via-transparent to-transparent z-[1]"></div>
         </section>
