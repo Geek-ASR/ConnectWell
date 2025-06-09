@@ -6,7 +6,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'; // Added CardFooter
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { ArrowLeft, CalendarDays, FileTextIcon, Loader2 } from 'lucide-react';
 import { getResearchArticleById, type ResearchArticle } from '@/lib/data/research-data';
 import { cn } from '@/lib/utils';
@@ -93,11 +93,11 @@ export default function MedicalResearchArticlePage() {
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
           </div>
         )}
-        <CardHeader className={cn(article.imageUrl && "relative -mt-16 md:-mt-20 z-10 p-6")}>
-          <CardTitle className={cn("text-2xl md:text-3xl font-bold", article.imageUrl && "text-white shadow-lg")}>
+        <CardHeader className={cn("p-6", article.imageUrl && "relative -mt-16 md:-mt-20 z-10")}>
+          <CardTitle className={cn("text-2xl md:text-3xl font-bold", article.imageUrl ? "text-gray-50" : "text-foreground")}>
             {article.title}
           </CardTitle>
-          <div className={cn("text-sm mt-2 flex flex-col sm:flex-row sm:items-center gap-x-4 gap-y-1", article.imageUrl ? "text-slate-200" : "text-muted-foreground")}>
+          <div className={cn("text-sm mt-2 flex flex-col sm:flex-row sm:items-center gap-x-4 gap-y-1", article.imageUrl ? "text-gray-300" : "text-muted-foreground")}>
             <div className="flex items-center">
               <FileTextIcon className="mr-1.5 h-4 w-4" />
               <span>Source: {article.source}</span>
@@ -108,7 +108,7 @@ export default function MedicalResearchArticlePage() {
             </div>
           </div>
         </CardHeader>
-        <CardContent className="p-6 space-y-4">
+        <CardContent className="p-6 pt-0 space-y-4">
           <CardDescription className="text-base md:text-lg text-foreground/90 leading-relaxed whitespace-pre-line">
             {article.summary}
           </CardDescription>
