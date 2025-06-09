@@ -3,11 +3,15 @@
 
 import { revalidatePath } from 'next/cache';
 import { 
-  addCommunity as addCommunityService, 
-  updateCommunityDetails as updateCommunityDetailsService, 
-  addPostToCommunity as addPostToCommunityService, // Corrected import name
+  addCommunityService, 
+  updateCommunityDetailsService, 
+  addPostToCommunityService,
+  getAllCommunities, // Added for new action
+  getCommunityById, // Added for new action
+  addCommentToPost, // Added for new action
   type Community,
-  type PostInCommunity 
+  type PostInCommunity,
+  type Comment 
 } from '@/lib/community-service';
 import { generateImage } from '@/ai/flows/generate-image-flow';
 
@@ -135,6 +139,7 @@ export async function createCommunityAction(
 
       revalidatePath('/communities');
       revalidatePath('/communities/create'); 
+      revalidatePath(`/communities/${newCommunity.id}`);
       return { 
         success: true, 
         message: `Community "${newCommunity.name}" created! ${iconGenerationMessage} ${bannerMessage}`,
@@ -230,7 +235,7 @@ export async function createPostInCommunityAction(
   }
 
   try {
-    const newPost = addPostToCommunityService(communityId, { // Ensure this function is correctly named and imported
+    const newPost = addPostToCommunityService(communityId, {
       userId,
       userName,
       userAvatar: userAvatar || `https://placehold.co/40x40.png?text=${userName.substring(0,2).toUpperCase()}`,
@@ -253,4 +258,27 @@ export async function createPostInCommunityAction(
     console.error("Error in createPostInCommunityAction:", error);
     return { success: false, message: 'An unexpected error occurred while creating the post.' };
   }
+}
+
+// New server actions for reading data
+export async function getAllCommunitiesAction(): Promise<Community[]> {
+  return getAllCommunities();
+}
+
+export async function getCommunityByIdAction(id: string): Promise<Community | undefined> {
+  return getCommunityById(id);
+}
+
+export type AddCommentData = Omit<Comment, 'id' | 'time'>;
+
+export async function addCommentToPostAction(
+  communityId: string, 
+  postId: string, 
+  commentData: AddCommentData
+): Promise<Comment | null> {
+  const newComment = addCommentToPost(communityId, postId, commentData);
+  if (newComment) {
+    revalidatePath(`/communities/${communityId}`);
+  }
+  return newComment;
 }

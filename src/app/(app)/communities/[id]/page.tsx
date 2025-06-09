@@ -1,11 +1,11 @@
 
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useActionState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useActionState } from "react"; 
+// import { useActionState } from "react"; // Already imported above
 import { useFormStatus } from "react-dom";
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,12 +20,15 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext'; 
 import { cn } from '@/lib/utils';
 import type { Community, PostInCommunity, Comment } from '@/lib/community-service'; 
-import { getCommunityById, addCommentToPost } from '@/lib/community-service'; 
+// import { getCommunityById, addCommentToPost } from '@/lib/community-service'; // Will use server actions instead
 import { 
   updateCommunityAction, 
   createPostInCommunityAction, 
+  getCommunityByIdAction, // New import
+  addCommentToPostAction, // New import
   type UpdateCommunityFormState,
-  type CreatePostInCommunityFormState 
+  type CreatePostInCommunityFormState,
+  type AddCommentData
 } from '@/actions/community-actions';
 
 function EditCommunitySubmitButton() {
@@ -68,6 +71,7 @@ export default function CommunityDetailPage() {
 
   const [activeCommentPostId, setActiveCommentPostId] = useState<string | null>(null);
   const [newCommentText, setNewCommentText] = useState("");
+  const [isPostingComment, setIsPostingComment] = useState(false);
 
 
   const initialEditFormState: UpdateCommunityFormState = { success: false };
@@ -80,19 +84,36 @@ export default function CommunityDetailPage() {
   const initialCreatePostFormState: CreatePostInCommunityFormState = { success: false };
   const [createPostFormState, formActionCreatePost] = useActionState(createPostInCommunityAction, initialCreatePostFormState); 
 
-  useEffect(() => {
-    if (communityId) {
-      const foundCommunity = getCommunityById(communityId);
+  const fetchCommunityData = async (id: string) => {
+    setLoading(true);
+    try {
+      const foundCommunity = await getCommunityByIdAction(id);
       if (foundCommunity) {
         setCommunity(foundCommunity);
         setCurrentEditName(foundCommunity.name);
         setCurrentEditDescription(foundCommunity.description);
         setCurrentEditLongDescription(foundCommunity.longDescription || foundCommunity.description);
       } else {
-        console.error("Community not found with ID:", communityId);
+        console.error("Community not found with ID:", id);
+        setCommunity(null); // Ensure community is null if not found
       }
+    } catch (error) {
+      console.error("Failed to fetch community data:", error);
+      toast({ variant: "destructive", title: "Error", description: "Could not load community details."});
+      setCommunity(null);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
+  };
+
+
+  useEffect(() => {
+    if (communityId) {
+      fetchCommunityData(communityId);
+    } else {
+      setLoading(false); // No ID, so not loading
+      setCommunity(null);
+    }
   }, [communityId]);
 
   useEffect(() => {
@@ -101,10 +122,8 @@ export default function CommunityDetailPage() {
         title: "Community Updated!",
         description: editFormState.message || `The community "${editFormState.community.name}" has been updated.`,
       });
-      setCommunity(editFormState.community); 
-      setCurrentEditName(editFormState.community.name);
-      setCurrentEditDescription(editFormState.community.description);
-      setCurrentEditLongDescription(editFormState.community.longDescription || editFormState.community.description);
+      // No need to setCommunity directly, revalidation should handle it, or re-fetch
+      if (communityId) fetchCommunityData(communityId);
       setIsEditCommunityDialogOpen(false); 
     } else if (editFormState?.message && !editFormState.success) {
       toast({
@@ -113,7 +132,7 @@ export default function CommunityDetailPage() {
         description: editFormState.message,
       });
     }
-  }, [editFormState, toast]);
+  }, [editFormState, toast, communityId]);
 
   useEffect(() => {
     if (createPostFormState?.success && createPostFormState.post && communityId) {
@@ -121,10 +140,8 @@ export default function CommunityDetailPage() {
         title: "Post Created!",
         description: createPostFormState.message || "Your post has been added.",
       });
-      const updatedCommunityData = getCommunityById(communityId);
-      if (updatedCommunityData) {
-        setCommunity(updatedCommunityData);
-      }
+      // Re-fetch community data to show the new post
+      fetchCommunityData(communityId);
       setIsNewPostDialogOpen(false);
       setNewPostTitle("");
       setNewPostContent("");
@@ -175,7 +192,7 @@ export default function CommunityDetailPage() {
 
   const handleUpvotePost = (postId: string) => {
     if (!community) return;
-
+    // This is a client-side optimistic update. A real version would call a server action.
     const updatedPosts = community.posts.map(post => {
       if (post.id === postId) {
         const newUpvotedState = !post.isUpvotedByUser;
@@ -206,8 +223,8 @@ export default function CommunityDetailPage() {
     }
   };
 
-  const handlePostNewComment = (postId: string) => {
-    if (!community || !communityId || !user) {
+  const handlePostNewComment = async (postId: string) => {
+    if (!communityId || !user || !community) {
       toast({ title: "Error", description: "Cannot post comment. User or community data missing.", variant: "destructive"});
       return;
     }
@@ -216,24 +233,30 @@ export default function CommunityDetailPage() {
       return;
     }
 
-    const commentAdded = addCommentToPost(communityId, postId, {
-      userId: user.uid,
-      userName: user.displayName || "Anonymous User",
-      userAvatar: user.photoURL || `https://placehold.co/40x40.png?text=${getInitials(user.displayName)}`,
-      userAvatarHint: "user avatar",
-      text: newCommentText,
-    });
+    setIsPostingComment(true);
+    try {
+      const commentPayload: AddCommentData = {
+        userId: user.uid,
+        userName: user.displayName || "Anonymous User",
+        userAvatar: user.photoURL || `https://placehold.co/40x40.png?text=${getInitials(user.displayName)}`,
+        userAvatarHint: "user avatar",
+        text: newCommentText,
+      };
+      const newComment = await addCommentToPostAction(communityId, postId, commentPayload);
 
-    if (commentAdded) {
-      const updatedCommunityData = getCommunityById(communityId);
-      if (updatedCommunityData) {
-        setCommunity(updatedCommunityData);
+      if (newComment) {
+        await fetchCommunityData(communityId); // Re-fetch to get updated comments
+        setNewCommentText("");
+        // Optionally close the input: setActiveCommentPostId(null); // Or keep open for more comments
+        toast({title: "Comment Posted!"});
+      } else {
+        toast({title: "Error", description: "Failed to post comment.", variant: "destructive"});
       }
-      setNewCommentText("");
-      // Optionally close the input: setActiveCommentPostId(null);
-      toast({title: "Comment Posted!"});
-    } else {
-      toast({title: "Error", description: "Failed to post comment.", variant: "destructive"});
+    } catch (error) {
+      console.error("Error posting comment:", error);
+      toast({title: "Error", description: "An unexpected error occurred while posting comment.", variant: "destructive"});
+    } finally {
+      setIsPostingComment(false);
     }
   };
 
@@ -519,10 +542,16 @@ export default function CommunityDetailPage() {
                                   value={newCommentText}
                                   onChange={(e) => setNewCommentText(e.target.value)}
                                   className="flex-grow h-9 text-xs"
-                                  onKeyPress={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handlePostNewComment(post.id);}}}
+                                  onKeyPress={(e) => { if (e.key === 'Enter' && !e.shiftKey && !isPostingComment) { e.preventDefault(); handlePostNewComment(post.id);}}}
+                                  disabled={isPostingComment}
                                 />
-                                <Button size="icon" className="h-9 w-9" onClick={() => handlePostNewComment(post.id)} disabled={!newCommentText.trim()}>
-                                  <Send className="h-4 w-4" />
+                                <Button 
+                                  size="icon" 
+                                  className="h-9 w-9" 
+                                  onClick={() => handlePostNewComment(post.id)} 
+                                  disabled={!newCommentText.trim() || isPostingComment}
+                                >
+                                  {isPostingComment ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                                   <span className="sr-only">Post Comment</span>
                                 </Button>
                               </div>
@@ -622,10 +651,3 @@ export default function CommunityDetailPage() {
     </div>
   );
 }
-
-
-    
-
-    
-
-    

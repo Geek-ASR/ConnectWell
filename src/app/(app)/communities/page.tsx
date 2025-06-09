@@ -4,37 +4,63 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { PlusCircle, Search, Users } from "lucide-react";
+import { PlusCircle, Search, Users, Loader2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
-import type { Community } from '@/lib/community-service'; // Import Community type
-import { getAllCommunities } from '@/lib/community-service'; // Import data fetching function
+import type { Community } from '@/lib/community-service'; 
+import { getAllCommunitiesAction } from '@/actions/community-actions';
 
 export default function CommunitiesPage() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [communities, setCommunities] = useState<Community[]>([]);
+  const [allCommunities, setAllCommunities] = useState<Community[]>([]);
   const [filteredCommunities, setFilteredCommunities] = useState<Community[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Fetch all communities when the component mounts
-    setCommunities(getAllCommunities());
+    const fetchCommunities = async () => {
+      try {
+        setLoading(true);
+        const data = await getAllCommunitiesAction();
+        setAllCommunities(data);
+        setFilteredCommunities(data); // Initially show all
+      } catch (error) {
+        console.error("Failed to fetch communities:", error);
+        // Optionally, set an error state and display it to the user
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCommunities();
   }, []); 
   
   useEffect(() => {
     // Filter communities based on search term
     const lowercasedSearchTerm = searchTerm.toLowerCase();
-    const results = communities.filter(community =>
+    const results = allCommunities.filter(community =>
       community.name.toLowerCase().includes(lowercasedSearchTerm) ||
       community.description.toLowerCase().includes(lowercasedSearchTerm)
     );
     setFilteredCommunities(results);
-  }, [searchTerm, communities]);
+  }, [searchTerm, allCommunities]);
 
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
   };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-[calc(100vh-200px)]">
+         <Card className="shadow-lg p-6">
+            <CardContent className="pt-6 flex items-center gap-3">
+                <Loader2 className="h-10 w-10 animate-spin text-primary" />
+                <p className="text-2xl text-muted-foreground">Loading communities...</p>
+            </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -101,10 +127,10 @@ export default function CommunitiesPage() {
       ) : (
         <Card>
           <CardContent className="pt-6 text-center">
-            {searchTerm ? (
+            {searchTerm && allCommunities.length > 0 ? (
                 <p className="text-lg text-muted-foreground">No communities found matching your search for &quot;{searchTerm}&quot;. Try a different term or create one!</p>
             ) : (
-                <p className="text-lg text-muted-foreground">No communities available. Why not create one?</p>
+                 <p className="text-lg text-muted-foreground">No communities available yet. Why not be the first to create one?</p>
             )}
           </CardContent>
         </Card>

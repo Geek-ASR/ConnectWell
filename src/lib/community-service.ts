@@ -1,6 +1,4 @@
 
-"use client"; 
-
 export interface Comment {
   id: string;
   userId: string;
@@ -75,7 +73,7 @@ interface AddCommunityData {
   bannerImageHint?: string; // Hint for the user-provided banner image
 }
 
-export const addCommunity = (communityData: AddCommunityData): Community => {
+export const addCommunityService = (communityData: AddCommunityData): Community => {
   const newCommunity: Community = {
     id: Date.now().toString(),
     name: communityData.name,
@@ -94,7 +92,7 @@ export const addCommunity = (communityData: AddCommunityData): Community => {
   return newCommunity;
 };
 
-export const addPostToCommunity = (
+export const addPostToCommunityService = (
   communityId: string,
   postBaseData: { userId: string; userName: string; userAvatar: string; userAvatarHint: string; title: string; content: string }
 ): PostInCommunity | null => {
@@ -115,7 +113,7 @@ export const addPostToCommunity = (
   return null;
 };
 
-export const updateCommunityDetails = (
+export const updateCommunityDetailsService = (
   communityId: string,
   updatedData: {
     name?: string;
