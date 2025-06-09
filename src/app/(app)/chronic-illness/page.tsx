@@ -27,7 +27,7 @@ export default function ChronicIllnessPage() {
       <Card className="shadow-xl border-border/50 overflow-hidden">
         <div className="relative h-56 md:h-72 bg-gradient-to-br from-primary/60 via-accent/40 to-secondary/50">
           <Image 
-            src="https://placehold.co/1200x400.png" 
+            src="https://images.unsplash.com/photo-1579208570378-8c970854bc23?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxzdXBwb3J0JTIwY29tZm9ydCUyMGVtcGF0aHl8ZW58MHx8fHwxNzQ5NDkyMTMyfDA&ixlib=rb-4.1.0&q=80&w=1080" 
             alt="Supportive hands or abstract representation of comfort"
             fill
             style={{ objectFit: 'cover' }}
