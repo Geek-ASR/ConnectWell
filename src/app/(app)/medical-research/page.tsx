@@ -11,9 +11,9 @@ import Link from 'next/link';
 import { featuredResearch, trendingTopicsData } from '@/lib/data/research-data'; // Import data
 
 const helpfulResources = [
-  { id: 'hr1', name: 'PubMed Central (PMC)', description: 'Free full-text archive of biomedical and life sciences literature.', link: 'https://www.ncbi.nlm.nih.gov/pmc/' },
+  { id: 'hr1', name: 'PubMed Central (PMC)', description: 'Free full-text archive of biomedical and life sciences literature.', link: 'https://pmc.ncbi.nlm.nih.gov/' },
   { id: 'hr2', name: 'ClinicalTrials.gov', description: 'Database of privately and publicly funded clinical studies conducted around the world.', link: 'https://clinicaltrials.gov/' },
-  { id: 'hr3', name: 'World Health Organization (WHO) Research', description: 'Global health research initiatives and publications.', link: 'https://www.who.int/research-and-innovation' },
+  { id: 'hr3', name: 'World Health Organization (WHO) Research', description: 'Global health research initiatives and publications.', link: 'https://www.who.int/our-work/science-division/research-for-health' },
 ];
 
 export default function MedicalResearchPage() {
