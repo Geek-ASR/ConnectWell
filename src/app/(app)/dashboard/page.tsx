@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -90,7 +91,7 @@ const initialFeedItems: FeedItem[] = [
     id: "1",
     user: {
       name: "Dr. Emily Carter",
-      avatarUrl: "https://placehold.co/40x40.png?text=EC",
+      avatarUrl: "https://images.unsplash.com/photo-1580489944761-15a19d654956?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxkb2N0b3IlMjBwb3J0cmFpdHxlbnwwfHx8fDE3NDk0OTI1MDR8MA&ixlib=rb-4.1.0&q=80&w=1080",
       avatarHint: "doctor portrait",
       role: "Cardiologist, Lead Researcher",
       isVerified: true,
@@ -99,7 +100,7 @@ const initialFeedItems: FeedItem[] = [
     question: "Latest advancements in hypertension treatment?",
     content:
       "Recent studies show promising results with new combination therapies and personalized lifestyle intervention programs. One particular study highlighted the impact of personalized medicine approach in managing high blood pressure effectively, leading to better patient outcomes and fewer side effects compared to traditional methods. Further research is ongoing to explore long-term benefits.",
-    imageUrl: "https://placehold.co/600x400.png",
+    imageUrl: "https://images.unsplash.com/photo-1606206591513-adbfbdd7a177?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxtZWRpY2FsJTIwcmVzZWFyY2h8ZW58MHx8fHwxNzQ5NDkyNTA0fDA&ixlib=rb-4.1.0&q=80&w=1080",
     imageHint: "medical research",
     tags: ["Hypertension", "Cardiology", "Research"],
     upvotes: 1256,
@@ -114,7 +115,7 @@ const initialFeedItems: FeedItem[] = [
     id: "2",
     user: {
       name: "John Smith",
-      avatarUrl: "https://placehold.co/40x40.png?text=JS",
+      avatarUrl: "https://images.unsplash.com/photo-1597764690472-ec054f1c8637?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxwYXRpZW50JTIwYWR2b2NhdGV8ZW58MHx8fHwxNzQ5NDkyNTA0fDA&ixlib=rb-4.1.0&q=80&w=1080",
       avatarHint: "patient advocate",
       role: "Patient Advocate, Diabetes Educator",
     },
@@ -134,7 +135,7 @@ const initialFeedItems: FeedItem[] = [
     id: "3",
     user: {
       name: "Wellness Hub",
-      avatarUrl: "https://placehold.co/40x40.png?text=WH",
+      avatarUrl: "https://images.unsplash.com/photo-1642793891075-4f53583a2079?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHx3ZWxsbmVzcyUyMGxvZ298ZW58MHx8fHwxNzQ5NDkyNTA0fDA&ixlib=rb-4.1.0&q=80&w=1080",
       avatarHint: "wellness logo",
       role: "Community Space",
       isVerified: true,
@@ -143,7 +144,7 @@ const initialFeedItems: FeedItem[] = [
     question: "Best practices for post-operative care at home?",
     content:
       "Recovering from surgery requires careful attention to medication schedules, wound care, and mobility exercises. We've compiled a list of essential tips from healthcare professionals to ensure a smooth recovery process. Remember to follow your doctor's specific instructions. Read more on our blog...",
-    imageUrl: "https://placehold.co/600x400.png",
+    imageUrl: "https://images.unsplash.com/photo-1532372576444-dda954194ad0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxob21lJTIwcmVjb3Zlcnl8ZW58MHx8fHwxNzQ5NDkyNTA0fDA&ixlib=rb-4.1.0&q=80&w=1080",
     imageHint: "home recovery",
     tags: ["PostOp", "Recovery", "Healthcare"],
     upvotes: 930,
@@ -162,7 +163,7 @@ const ads: AdItem[] = [
   {
     id: "ad1",
     title: "Advanced Health Monitoring Wearable - Track Vitals 24/7",
-    imageUrl: "https://placehold.co/300x200.png",
+    imageUrl: "https://images.unsplash.com/photo-1526256262350-7da7584cf5eb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxoZWFsdGglMjB3ZWFyYWJsZXxlbnwwfHx8fDE3NDk0OTI1MDR8MA&ixlib=rb-4.1.0&q=80&w=1080",
     imageHint: "health wearable",
     linkUrl: "#",
     advertiser: "TechCare Inc.",
@@ -170,7 +171,7 @@ const ads: AdItem[] = [
   {
     id: "ad2",
     title: "Join Our Online Yoga & Meditation Classes for Mind-Body Balance",
-    imageUrl: "https://placehold.co/300x200.png",
+    imageUrl: "https://images.unsplash.com/photo-1608405059861-b21a68ae76a2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHx5b2dhJTIwbWVkaXRhdGlvbnxlbnwwfHx8fDE3NDk0OTI1MDR8MA&ixlib=rb-4.1.0&q=80&w=1080",
     imageHint: "yoga meditation",
     linkUrl: "#",
     advertiser: "SereneMind Studio",
@@ -217,8 +218,8 @@ export default function DashboardPage() {
           id: Date.now().toString(),
           user: {
             name: user?.displayName || "Anonymous User",
-            avatarUrl: user?.photoURL || `https://placehold.co/40x40.png?text=${getInitials(user?.displayName)}`,
-            avatarHint: "user avatar",
+            avatarUrl: user?.photoURL || `https://images.unsplash.com/photo-1614383686435-dd60cf22aae7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHx1c2VyJTIwYXZhdGFyJTIwc21hbGx8ZW58MHx8fHwxNzQ5NDkyNTA0fDA&ixlib=rb-4.1.0&q=80&w=1080`,
+            avatarHint: "user avatar small",
             role: "Community Member", 
           },
           updatedTime: "Just now",
@@ -351,7 +352,11 @@ export default function DashboardPage() {
             <CardHeader className="pb-3 pt-4">
               <div className="flex items-center gap-3">
                 <Avatar className="h-11 w-11">
-                  <AvatarImage src={user?.photoURL ?? undefined} alt={user?.displayName ?? "User"} data-ai-hint="user avatar small"/>
+                  <AvatarImage 
+                    src={user?.photoURL?.includes("placehold.co") ? "https://images.unsplash.com/photo-1614383686435-dd60cf22aae7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHx1c2VyJTIwYXZhdGFyJTIwc21hbGx8ZW58MHx8fHwxNzQ5NDkyNTA0fDA&ixlib=rb-4.1.0&q=80&w=1080" : user?.photoURL ?? undefined} 
+                    alt={user?.displayName ?? "User"} 
+                    data-ai-hint="user avatar small"
+                  />
                   <AvatarFallback className="text-lg">{getInitials(user?.displayName)}</AvatarFallback>
                 </Avatar>
                 <p className="font-medium text-foreground">{user?.displayName || "Create a Post"}</p>
@@ -556,3 +561,4 @@ export default function DashboardPage() {
     </div>
   );
 }
+
