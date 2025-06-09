@@ -18,6 +18,7 @@ export default function TrendingTopicPage() {
   const [topic, setTopic] = useState<TrendingTopic | null | undefined>(undefined);
   const [loading, setLoading] = useState(true);
   const [currentDate, setCurrentDate] = useState('');
+  const [imageHint, setImageHint] = useState('medical research technology abstract');
 
   const topicId = typeof params.topicId === 'string' ? params.topicId : null;
 
@@ -26,6 +27,10 @@ export default function TrendingTopicPage() {
       setLoading(true);
       const foundTopic = getTrendingTopicById(topicId);
       setTopic(foundTopic);
+      if (foundTopic) {
+        const hint = foundTopic.name.toLowerCase().split(' ').slice(0, 2).join(' ') + " abstract";
+        setImageHint(hint);
+      }
       setLoading(false);
     } else {
       setTopic(null); 
@@ -71,8 +76,6 @@ export default function TrendingTopicPage() {
     );
   }
 
-  // const TopicIconComponent = topic.icon; // Icon might not be used in this newspaper layout
-
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       <div className="pt-2">
@@ -91,7 +94,7 @@ export default function TrendingTopicPage() {
               alt={`Image related to ${topic.name}`}
               fill
               style={{ objectFit: 'cover' }}
-              data-ai-hint="medical research technology abstract"
+              data-ai-hint={imageHint}
               priority
             />
              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
@@ -113,7 +116,6 @@ export default function TrendingTopicPage() {
               <User className="h-3.5 w-3.5 mr-1.5" />
               By: ConnectWell Research Team
             </div>
-             {/* topic.icon could be placed here if desired, e.g. next to category or author */}
           </div>
         </CardHeader>
         
@@ -122,10 +124,6 @@ export default function TrendingTopicPage() {
         <CardContent className="p-6 md:p-8">
           <div 
             className="prose prose-lg dark:prose-invert max-w-none text-foreground/90 leading-relaxed whitespace-pre-line"
-            // Using prose classes for better article typography if available, otherwise fallback to manual styling
-            // Ensure you have @tailwindcss/typography plugin if using prose classes
-            // Fallback manual styling:
-            // style={{ fontSize: '1.1rem', lineHeight: '1.7' }} 
           >
             {topic.details.split('\n\n').map((paragraph, index) => (
               <p key={index} className={index > 0 ? "mt-4" : ""}>{paragraph}</p>
