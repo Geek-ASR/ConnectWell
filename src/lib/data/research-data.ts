@@ -23,7 +23,7 @@ export interface ResearchArticle {
   summary: string;
   imageUrl: string;
   imageHint: string;
-  comments?: Comment[]; 
+  comments?: Comment[];
 }
 
 export const featuredResearch: ResearchArticle[] = [
@@ -43,7 +43,7 @@ export const featuredResearch: ResearchArticle[] = [
     source: 'Nature Medicine, Vol. 30',
     date: 'September 2024',
     summary: 'Recent clinical trials demonstrate significant improvements in patients with sickle cell anemia and beta-thalassemia using CRISPR-Cas9 therapy. The long-term efficacy and safety profiles are still under investigation, but initial results are highly encouraging for these debilitating conditions. This marks a significant step towards curative therapies for genetic disorders.',
-    imageUrl: 'https://placehold.co/600x400.png',
+    imageUrl: 'https://images.unsplash.com/photo-1641903202531-bfa6bf0c6419?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxnZW5lc3xlbnwwfHx8fDE3NDk0OTE4NDd8MA&ixlib=rb-4.1.0&q=80&w=1080',
     imageHint: 'dna helix genetics',
     comments: [],
   },
