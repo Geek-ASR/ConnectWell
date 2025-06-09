@@ -4,32 +4,10 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, BookOpen, HeartHandshake, Link as LinkIcon, MessageSquare, ShieldCheck, Users } from 'lucide-react';
+import { ArrowRight, BookOpen, HeartHandshake, Link as LinkIcon, Users } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-
-const featuredDiscussions = [
-  {
-    id: 'cd1',
-    title: 'Managing Daily Pain: What Works for You?',
-    category: 'Community Discussion',
-    summary: 'Share and discover tips, tricks, and routines that fellow members use to cope with daily chronic pain and improve quality of life.',
-    imageUrl: 'https://placehold.co/600x400.png',
-    imageHint: 'support group discussion',
-    link: '#', // Placeholder link to a specific thread
-    icon: MessageSquare,
-  },
-  {
-    id: 'cd2',
-    title: 'Navigating Doctor Appointments: A Patient\'s Guide',
-    category: 'Shared Experience',
-    summary: 'Tips on preparing for appointments, advocating for your needs, and building a strong relationship with your healthcare team.',
-    imageUrl: 'https://placehold.co/600x400.png',
-    imageHint: 'doctor patient consultation',
-    link: '#', // Placeholder link
-    icon: ShieldCheck,
-  },
-];
+import { featuredDiscussions } from '@/lib/data/chronic-illness-data'; // Updated import
 
 const copingStrategies = [
   { id: 'cs1', name: 'Mindfulness for Pain Relief', icon: HeartHandshake, link: '#', description: 'Explore guided meditations and mindfulness techniques.' },
@@ -38,7 +16,7 @@ const copingStrategies = [
 ];
 
 const externalResources = [
-  { id: 'er1', name: 'Chronic Pain Navigators Community', type: 'ConnectWell Community', icon: Users, link: '/communities/4' }, // Link to existing community
+  { id: 'er1', name: 'Chronic Pain Navigators Community', type: 'ConnectWell Community', icon: Users, link: '/communities/4' }, 
   { id: 'er2', name: 'American Chronic Pain Association', type: 'External Organization', icon: LinkIcon, link: 'https://www.theacpa.org/' },
   { id: 'er3', name: 'Invisible Disabilities Association', type: 'External Organization', icon: LinkIcon, link: 'https://invisibledisabilities.org/' },
 ];
@@ -88,7 +66,7 @@ export default function ChronicIllnessPage() {
               </CardContent>
               <CardFooter>
                 <Button variant="link" asChild className="p-0 h-auto text-primary hover:text-primary/80">
-                  <Link href={item.link}>Join Discussion <ArrowRight className="ml-1.5 h-4 w-4" /></Link>
+                  <Link href={`/chronic-illness/discussions/${item.id}`}>Read More <ArrowRight className="ml-1.5 h-4 w-4" /></Link>
                 </Button>
               </CardFooter>
             </Card>
