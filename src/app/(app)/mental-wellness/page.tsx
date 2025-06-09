@@ -14,7 +14,7 @@ const featuredContent = [
     title: 'Understanding Anxiety: Symptoms and Strategies',
     category: 'Educational',
     summary: 'Learn about the common signs of anxiety and discover effective strategies to manage its impact on daily life.',
-    imageUrl: 'https://placehold.co/600x400.png',
+    imageUrl: 'https://images.unsplash.com/photo-1551845833-fbd9a311bd1a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8Y2FsbSUyMHBlcnNvbiUyMHRoaW5raW5nfGVufDB8fHx8MTc0OTQ5MjAzOHww&ixlib=rb-4.1.0&q=80&w=1080',
     imageHint: 'calm person thinking',
     link: '#',
     icon: Brain,
@@ -24,7 +24,7 @@ const featuredContent = [
     title: 'The Power of Mindfulness in Stress Reduction',
     category: 'Practice',
     summary: 'Explore how mindfulness techniques can help reduce stress, improve focus, and enhance overall emotional balance.',
-    imageUrl: 'https://placehold.co/600x400.png',
+    imageUrl: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxtZWRpdGF0aW9uJTIwcGVhY2VmdWwlMjBzY2VuZXxlbnwwfHx8fDE3NDk0OTIwMzd8MA&ixlib=rb-4.1.0&q=80&w=1080',
     imageHint: 'meditation peaceful scene',
     link: '#',
     icon: Wind,
@@ -49,7 +49,7 @@ export default function MentalWellnessPage() {
       <Card className="shadow-xl border-border/50 overflow-hidden">
         <div className="relative h-56 md:h-72 bg-gradient-to-br from-accent/70 via-primary/50 to-secondary/60">
           <Image 
-            src="https://placehold.co/1200x400.png" 
+            src="https://images.unsplash.com/photo-1690695896840-a2de90fee72b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxhYnN0cmFjdCUyMGNhbG0lMjBwZWFjZWZ1bHxlbnwwfHx8fDE3NDk0OTIwMzh8MA&ixlib=rb-4.1.0&q=80&w=1080" 
             alt="Calming abstract background for mental wellness"
             fill
             style={{ objectFit: 'cover' }}
@@ -141,4 +141,3 @@ export default function MentalWellnessPage() {
     </div>
   );
 }
-
