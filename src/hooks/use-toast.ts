@@ -135,10 +135,13 @@ const listeners: Array<(state: State) => void> = []
 let memoryState: State = { toasts: [] }
 
 function dispatch(action: Action) {
-  memoryState = reducer(memoryState, action)
-  listeners.forEach((listener) => {
-    listener(memoryState)
-  })
+  memoryState = reducer(memoryState, action);
+  // Defer listener notification to the next tick to prevent "update during render" errors
+  setTimeout(() => {
+    listeners.forEach((listener) => {
+      listener(memoryState);
+    });
+  }, 0);
 }
 
 type Toast = Omit<ToasterToast, "id">
@@ -183,7 +186,7 @@ function useToast() {
         listeners.splice(index, 1)
       }
     }
-  }, []) // Changed dependency array from [state] to []
+  }, []) // Empty dependency array ensures this runs only once on mount/unmount
 
   return {
     ...state,
