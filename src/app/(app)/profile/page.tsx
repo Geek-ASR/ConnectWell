@@ -6,7 +6,7 @@ import { useFormStatus } from "react-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -15,7 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Edit3, ShieldCheck, CalendarDays, Loader2, ImageUp, Trash2 } from "lucide-react";
 import Image from "next/image";
 import { useToast } from "@/hooks/use-toast";
-import { updateUserProfileAction, type UpdateUserProfileFormState, type UserProfileData } from "@/actions/user-actions";
+import { updateUserProfileAction, getUserProfile, type UpdateUserProfileFormState, type UserProfileData } from "@/actions/user-actions";
 import { cn } from "@/lib/utils";
 
 const initialProfileBio = "Passionate about sharing experiences and learning from others. Love hiking and reading.";
@@ -39,6 +39,7 @@ export default function ProfilePage() {
   const { user } = useAuth();
   const { toast } = useToast();
   const editProfileFormRef = useRef<HTMLFormElement>(null);
+  const [profileLoading, setProfileLoading] = useState(true);
 
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   
@@ -65,58 +66,78 @@ export default function ProfilePage() {
   };
 
   useEffect(() => {
-    if (user?.uid) {
-      const storedBio = localStorage.getItem(`connectwell-profile-${user.uid}-bio`) || initialProfileBio;
-      const storedConditions = localStorage.getItem(`connectwell-profile-${user.uid}-conditions`) || initialMedicalConditions;
-      const storedAvatar = localStorage.getItem(`connectwell-profile-${user.uid}-avatar`);
-      const storedBanner = localStorage.getItem(`connectwell-profile-${user.uid}-banner`) || defaultBannerUrl;
-      
-      setBio(storedBio);
-      setMedicalConditionsString(storedConditions);
-      setCurrentAvatarUrl(storedAvatar);
-      setCurrentBannerUrl(storedBanner);
+    async function fetchProfile() {
+      if (user?.uid) {
+        setProfileLoading(true);
+        const profileData = await getUserProfile(user.uid);
+        if (profileData) {
+          setBio(profileData.bio || initialProfileBio);
+          setMedicalConditionsString(profileData.medicalConditions || initialMedicalConditions);
+          setCurrentAvatarUrl(profileData.avatarUrl || null);
+          setCurrentBannerUrl(profileData.bannerUrl || defaultBannerUrl);
 
-      // Initialize form states for dialog
-      setFormBio(storedBio);
-      setFormMedicalConditions(storedConditions);
-      setFormAvatarPreview(storedAvatar); // Preview is the current avatar initially
-      setFormBannerPreview(storedBanner); // Preview is the current banner initially
+          // Initialize form states for dialog
+          setFormBio(profileData.bio || initialProfileBio);
+          setFormMedicalConditions(profileData.medicalConditions || initialMedicalConditions);
+          setFormAvatarPreview(profileData.avatarUrl || (user.photoURL && !user.photoURL.includes("placehold.co") ? user.photoURL : defaultAvatarPlaceholder));
+          setFormBannerPreview(profileData.bannerUrl || defaultBannerUrl);
+
+        } else {
+          // No profile in Firestore, use defaults
+          setBio(initialProfileBio);
+          setMedicalConditionsString(initialMedicalConditions);
+          setCurrentAvatarUrl(user.photoURL && !user.photoURL.includes("placehold.co") ? user.photoURL : defaultAvatarPlaceholder);
+          setCurrentBannerUrl(defaultBannerUrl);
+          // Initialize form states for dialog with defaults
+          setFormBio(initialProfileBio);
+          setFormMedicalConditions(initialMedicalConditions);
+          setFormAvatarPreview(user.photoURL && !user.photoURL.includes("placehold.co") ? user.photoURL : defaultAvatarPlaceholder);
+          setFormBannerPreview(defaultBannerUrl);
+        }
+        setProfileLoading(false);
+      } else {
+        setProfileLoading(false);
+      }
     }
-  }, [user?.uid]);
+    fetchProfile();
+  }, [user?.uid, user?.photoURL]);
+
 
   const initialFormState: UpdateUserProfileFormState = { success: false };
-  const [formState, formAction] = useActionState(updateUserProfileAction, initialFormState);
+  // Bind userId to the action
+  const boundUpdateUserProfileAction = user?.uid ? updateUserProfileAction.bind(null, user.uid) : null;
+  const [formState, formAction] = useActionState(
+    boundUpdateUserProfileAction || ((prevState, formData) => Promise.resolve({success: false, message: "User not authenticated."})), 
+    initialFormState
+  );
 
   useEffect(() => {
-    if (formState?.success && formState.profileData) {
-      const { bio: newBio, medicalConditions: newConditions, avatarUrl: newAvatar, bannerUrl: newBanner } = formState.profileData;
-      
-      setBio(newBio || initialProfileBio);
-      setMedicalConditionsString(newConditions || initialMedicalConditions);
-      if (newAvatar) setCurrentAvatarUrl(newAvatar);
-      if (newBanner) setCurrentBannerUrl(newBanner);
-
-      if (user?.uid) {
-        localStorage.setItem(`connectwell-profile-${user.uid}-bio`, newBio || "");
-        localStorage.setItem(`connectwell-profile-${user.uid}-conditions`, newConditions || "");
-        if (newAvatar) localStorage.setItem(`connectwell-profile-${user.uid}-avatar`, newAvatar);
-        if (newBanner) localStorage.setItem(`connectwell-profile-${user.uid}-banner`, newBanner);
-      }
-      
+    if (formState?.success) {
       toast({
         title: "Profile Updated!",
         description: formState.message || "Your profile has been successfully updated.",
       });
       setIsEditDialogOpen(false);
+      
+      // Re-fetch profile data to update UI, or wait for real-time listener in future
+      if (user?.uid) {
+        getUserProfile(user.uid).then(profileData => {
+          if (profileData) {
+            setBio(profileData.bio || initialProfileBio);
+            setMedicalConditionsString(profileData.medicalConditions || initialMedicalConditions);
+            setCurrentAvatarUrl(profileData.avatarUrl || null);
+            setCurrentBannerUrl(profileData.bannerUrl || defaultBannerUrl);
+            // Also update form previews for next dialog open
+            setFormAvatarPreview(profileData.avatarUrl || (user.photoURL && !user.photoURL.includes("placehold.co") ? user.photoURL : defaultAvatarPlaceholder));
+            setFormBannerPreview(profileData.bannerUrl || defaultBannerUrl);
+          }
+        });
+      }
+      
       // Reset file inputs in dialog for next open
       setFormAvatarFile(null);
-      // setFormAvatarPreview(newAvatar || (user?.photoURL && !user.photoURL.includes("placehold.co") ? user.photoURL : defaultAvatarPlaceholder));
-      setFormAvatarPreview(newAvatar || currentAvatarUrl || (user?.photoURL && !user.photoURL.includes("placehold.co") ? user.photoURL : defaultAvatarPlaceholder) );
-
       setFormBannerFile(null);
-      setFormBannerPreview(newBanner || currentBannerUrl);
       editProfileFormRef.current?.reset();
-
 
     } else if (formState?.message && !formState.success) {
       toast({
@@ -124,10 +145,8 @@ export default function ProfilePage() {
         title: "Error Updating Profile",
         description: formState.message,
       });
-      // Do not close dialog on error, keep form values as they were
-      // Field errors are shown inline
     }
-  }, [formState, toast, user?.uid, currentAvatarUrl, currentBannerUrl]);
+  }, [formState, toast, user?.uid, user?.photoURL]);
 
 
   const handleOpenEditDialog = () => {
@@ -139,11 +158,6 @@ export default function ProfilePage() {
     setFormAvatarFile(null); // Clear any previously selected file
     setFormBannerFile(null); // Clear any previously selected file
     
-    // Reset formState if needed to clear previous errors from action
-    // This might not be strictly necessary if useActionState handles it, but good for safety.
-    if (formState && (formState.fieldErrors || !formState.success)) {
-       // dispatch({ type: 'RESET_FORM_STATE_ACTION_PROFILE' }); // If using a more complex reducer
-    }
     setIsEditDialogOpen(true);
   };
 
@@ -176,7 +190,7 @@ export default function ProfilePage() {
     .map(condition => condition.trim())
     .filter(condition => condition.length > 0);
 
-  if (!user) {
+  if (profileLoading || !user) {
     return (
         <div className="flex justify-center items-center h-screen">
             <Card className="shadow-lg">
@@ -236,12 +250,12 @@ export default function ProfilePage() {
           <div className="text-center mt-8">
             <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
               <DialogTrigger asChild>
-                <Button variant="outline" onClick={handleOpenEditDialog}>
+                <Button variant="outline" onClick={handleOpenEditDialog} disabled={!boundUpdateUserProfileAction}>
                   <Edit3 className="mr-2 h-4 w-4" /> Edit Profile
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[580px]">
-                <form action={formAction} ref={editProfileFormRef}>
+                <form action={boundUpdateUserProfileAction || undefined} ref={editProfileFormRef}>
                   <DialogHeader>
                     <DialogTitle>Edit Your Profile</DialogTitle>
                     <DialogDescription>

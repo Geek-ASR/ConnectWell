@@ -2,6 +2,8 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { db } from '@/lib/firebase';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
 
 export interface UserProfileData {
   bio?: string;
@@ -19,7 +21,7 @@ export interface UpdateUserProfileFormState {
     avatarFile?: string;
     bannerFile?: string;
   };
-  profileData?: UserProfileData;
+  // No longer returning profileData from the action
 }
 
 // Simulate a delay for server action
@@ -30,11 +32,18 @@ const MAX_BANNER_SIZE_MB = 5;
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
 
 export async function updateUserProfileAction(
-  // prevState is not strictly needed here if we rebuild full state, but good for pattern
+  userId: string, // Added userId parameter
   prevState: UpdateUserProfileFormState | undefined, 
   formData: FormData
 ): Promise<UpdateUserProfileFormState> {
   await sleep(500); // Simulate network delay
+
+  if (!userId) {
+    return {
+      success: false,
+      message: 'User ID is missing. Cannot update profile.',
+    };
+  }
 
   const bio = formData.get('bio') as string;
   const medicalConditions = formData.get('medicalConditions') as string;
@@ -94,32 +103,65 @@ export async function updateUserProfileAction(
       success: false,
       message: 'Please correct the errors below.',
       fieldErrors,
-      // Return existing data if files cause errors but text is okay
-      profileData: {
-        bio: bio.trim(),
-        medicalConditions: medicalConditions.trim(),
-        // Don't pass back new URIs if there were errors with them
-      }
     };
   }
 
-  const updatedProfileData: UserProfileData = {
-    bio: bio.trim(),
-    medicalConditions: medicalConditions.trim(),
-  };
+  try {
+    const userProfileRef = doc(db, 'users', userId);
+    // Fetch existing data to merge, or start with an empty object
+    let existingData: UserProfileData = {};
+    const docSnap = await getDoc(userProfileRef);
+    if (docSnap.exists()) {
+        existingData = docSnap.data() as UserProfileData;
+    }
 
-  if (newAvatarDataUri) {
-    updatedProfileData.avatarUrl = newAvatarDataUri;
+    const profileDataToSave: UserProfileData = {
+      ...existingData, // Preserve existing fields not being updated
+      bio: bio.trim(),
+      medicalConditions: medicalConditions.trim(),
+    };
+
+    if (newAvatarDataUri) {
+      profileDataToSave.avatarUrl = newAvatarDataUri;
+    }
+    // If avatarFile is null or size 0, but there was an intent to remove (not explicitly handled here yet, but could be)
+    // For now, if no new avatar file is provided, existing avatarUrl is preserved unless explicitly cleared.
+    // To clear an image, one might send a specific flag or an empty string for the file input.
+
+    if (newBannerDataUri) {
+      profileDataToSave.bannerUrl = newBannerDataUri;
+    }
+    
+    await setDoc(userProfileRef, profileDataToSave, { merge: true });
+
+    revalidatePath('/profile');
+
+    return {
+      success: true,
+      message: 'Profile updated successfully!',
+    };
+
+  } catch (error) {
+    console.error("Error saving profile to Firestore:", error);
+    return {
+      success: false,
+      message: 'An error occurred while saving your profile. Please try again.',
+    };
   }
-  if (newBannerDataUri) {
-    updatedProfileData.bannerUrl = newBannerDataUri;
+}
+
+// Action to fetch profile data (can be called by client components)
+export async function getUserProfile(userId: string): Promise<UserProfileData | null> {
+  if (!userId) return null;
+  try {
+    const userProfileRef = doc(db, 'users', userId);
+    const docSnap = await getDoc(userProfileRef);
+    if (docSnap.exists()) {
+      return docSnap.data() as UserProfileData;
+    }
+    return null;
+  } catch (error) {
+    console.error("Error fetching profile from Firestore:", error);
+    return null; // Or throw error / return an error state
   }
-
-  revalidatePath('/profile');
-
-  return {
-    success: true,
-    message: 'Profile updated successfully!',
-    profileData: updatedProfileData,
-  };
 }
